@@ -85,6 +85,8 @@ class State:
         self.dices = [1,2,3,4,5,6]
         self.gaz = 2
         self.actual_speed = 0
+        self.father = None 
+        self.successors = []
     
     def auth_dices(self):
         gears = [f for f in self.dices if 
@@ -143,6 +145,20 @@ class State:
         elif self.actual_speed == 5:
             ns.time = self.time + 10 
         return ns
+        
+    def find_successors(self):
+        auth_dices = self.state.auth_dices()
+        moves = self.state.road.what_next(self.state.tile_position,
+            self.state.pos_on_tile)
+        for d in auth_dices:
+            for m in moves:
+                n = self.state.next_state(d,m)
+                n.father = self
+                self.successors.append(n)
+        # add stop
+        if self.state.actual_speed != 0:
+            self.successors.append(self.state.next_state_stop())             
+        return self.successors
     
     def inspect(self):
         p("Inspect state:")
@@ -176,16 +192,9 @@ class Move_leaf:
         if self.state.actual_speed != 0:
             self.successors.append(self.state.next_state_stop())
         
-        
-        
+
         return self.successors
-    
-    def pacours_largeur(self, depth_limit):
-        if self.depth > depth_limit:
-            return self
-        else:
-            for m in self.successors
-            return self.parcours(self, depth_limit-1)
+
         
 
             
