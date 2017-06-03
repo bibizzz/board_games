@@ -121,6 +121,29 @@ class State:
             ns.actual_speed = dice
         return ns
     
+    def must_stop(self):
+        return (len(self.dices) == 0 and  self.gaz == 0)
+    
+    def next_state_stop(self):
+        ns = State(self.road)
+        ns.tile_position = self.tile_position
+        ns.pos_on_tile = self.pos_on_tile
+        ns.move = self.move + 1       
+        ns.dices = [1,2,3,4,5,6]
+        ns.gaz = 2
+        ns.actual_speed = self.actual_speed
+        if self.actual_speed == 1:
+            ns.time = self.time + 50
+        elif self.actual_speed == 2:
+            ns.time = self.time + 40
+        elif self.actual_speed == 3:
+            ns.time = self.time + 30        
+        elif self.actual_speed == 4:
+            ns.time = self.time + 20
+        elif self.actual_speed == 5:
+            ns.time = self.time + 10 
+        return ns
+    
     def inspect(self):
         p("Inspect state:")
         p(self.move)
@@ -132,7 +155,7 @@ class State:
         p(self.gaz) 
         p(self.actual_speed)
 
-class Move_tree:
+class Move_leaf:
     def __init__(self, road):
         self.depth = 0
         self.father = None 
@@ -146,8 +169,24 @@ class Move_tree:
         for d in auth_dices:
             for m in moves:
                 n = self.state.next_state(d,m)
+                m = Move_leaf(self.state.road)
+                m.state = n
                 self.successors.append(n)
+        # add stop
+        if self.state.actual_speed != 0:
+            self.successors.append(self.state.next_state_stop())
+        
+        
+        
         return self.successors
+    
+    def pacours_largeur(self, depth_limit):
+        if self.depth > depth_limit:
+            return self
+        else:
+            for m in self.successors
+            return self.parcours(self, depth_limit-1)
+        
 
             
 class Player:
@@ -173,7 +212,7 @@ fr.append(Straight)
 fr.inspect()
 
 
-m = Move_tree(fr)
+m = Move_leaf(fr)
 suc = m.find_successors()
 for s in suc:
     s.inspect()
