@@ -82,7 +82,7 @@ class State:
         self.road = road
         self.move = 0
         self.time = 0
-        self.tile_position = 0
+        self.tile_position = -1
         self.pos_on_tile = 0
         self.time = 0
         self.dices = [1,2,3,4,5,6]
@@ -103,10 +103,10 @@ class State:
     def next_state(self, dice, move):
         # check if dice is valid
         tile, pot = move
-        p(tile)
-        p(pot)
+#        p("next_state")
+#        p(tile)
+#        p(pot)
         max_auth = self.road.tiles[self.tile_position+tile].get_max_gear(pot)
-        p(max_auth)
         if dice > max_auth:
             return None
         
@@ -114,14 +114,13 @@ class State:
         ns.tile_position = self.tile_position + tile
         ns.time = self.time
         ns.move = self.move + 1
-        ns.pos_on_tile = pot
+        ns.pos_on_tile = pot        
+        ns.dices = list(self.dices)
         if dice == 0: #gaz           
             ns.gaz = self.gaz - 1
-            ns.dices = self.dices
             ns.actual_speed= self.actual_speed
         else:
-            ns.gaz = self.gaz
-            ns.dices = self.dices    
+            ns.gaz = self.gaz    
             ns.dices.remove(dice)
             ns.actual_speed = dice
         return ns
@@ -156,8 +155,9 @@ class State:
         for d in auth_dices:
             for m in moves:
                 n = self.next_state(d,m)
-                n.father = self
-                self.successors.append(n)
+                if n != None:                
+                    n.father = self
+                    self.successors.append(n)
         # add stop
         if self.actual_speed != 0:
             self.successors.append(self.next_state_stop())             
@@ -215,14 +215,21 @@ fr.append(Straight)
 fr.append(Straight)
 fr.inspect()
 
-start = State(fr)
 
+start = State(fr)
+p("start")
+start.inspect()
 suc = start.find_successors()
+p("1st")
 for s in suc:
+    s.inspect()
     s2 = s.find_successors()
     for p2 in s2:
+        p("2nd")        
+        p2.inspect()
         s3 = p2.find_successors()        
-        for p3 in s3:        
+        for p3 in s3:   
+            p("3rd")
             p3.inspect()
 
 
