@@ -54,6 +54,9 @@ class Road:
         self.tiles.append(tile)
     
     def what_next(self, tile, pos_on_tile):
+        if tile >= len(self.tiles): # this is the last tile
+            return [-10,-10]
+        
         nxt = self.tiles[tile].next_pos_on_tile(pos_on_tile)
         if nxt == [-1]: # next tile
             pot_l = self.tiles[tile+1].next_pos_on_tile(-1)
@@ -93,7 +96,7 @@ class State:
             f >= self.actual_speed-1 and 
             f <= self.actual_speed +1]
         if self.actual_speed != 0:
-            for d in range(self.acc):
+            if self.gaz > 0:            
                 gears.append(0)
         return gears
             
@@ -147,29 +150,24 @@ class State:
         return ns
         
     def find_successors(self):
-        auth_dices = self.state.auth_dices()
-        moves = self.state.road.what_next(self.state.tile_position,
-            self.state.pos_on_tile)
+        auth_dices = self.auth_dices()
+        moves = self.road.what_next(self.tile_position,
+            self.pos_on_tile)
         for d in auth_dices:
             for m in moves:
-                n = self.state.next_state(d,m)
+                n = self.next_state(d,m)
                 n.father = self
                 self.successors.append(n)
         # add stop
-        if self.state.actual_speed != 0:
-            self.successors.append(self.state.next_state_stop())             
+        if self.actual_speed != 0:
+            self.successors.append(self.next_state_stop())             
         return self.successors
     
     def inspect(self):
-        p("Inspect state:")
-        p(self.move)
-        p(self.time) 
-        p(self.tile_position) 
-        p(self.pos_on_tile)
-        p(self.time) 
-        p(self.dices) 
-        p(self.gaz) 
-        p(self.actual_speed)
+        p("Move " + str(self.move) + ':' + str(self.time) + 's.' )   
+        p('position ' + str(self.tile_position) + ' on_tile ' + str(self.pos_on_tile))         
+        p(str(self.dices) + ' gaz:' + str(self.gaz) + ' speed:' 
+            + str(self.actual_speed))
 
 class Move_leaf:
     def __init__(self, road):
@@ -208,9 +206,6 @@ fr = Road()
 Straight = Tile('straight')
 Turn2 = Tile('turn', [2,3])
 fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
 fr.append(Turn2)
 fr.append(Straight)
 fr.append(Straight)
@@ -220,10 +215,15 @@ fr.append(Straight)
 fr.append(Straight)
 fr.inspect()
 
+start = State(fr)
 
-m = Move_leaf(fr)
-suc = m.find_successors()
+suc = start.find_successors()
 for s in suc:
-    s.inspect()
+    s2 = s.find_successors()
+    for p2 in s2:
+        s3 = p2.find_successors()        
+        for p3 in s3:        
+            p3.inspect()
+
 
 
