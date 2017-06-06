@@ -54,6 +54,7 @@ class Road:
         self.tiles.append(tile)
     
     def what_next(self, tile, pos_on_tile):
+        print(tile)
         if tile >= len(self.tiles): # this is the last tile
             return [-10,-10]
         
@@ -79,6 +80,7 @@ class Road:
         
 class State:
     def __init__(self,road):
+        self.last_dice = -1
         self.road = road
         self.move = 0
         self.time = 0
@@ -106,6 +108,7 @@ class State:
 #        p("next_state")
 #        p(tile)
 #        p(pot)
+        
         max_auth = self.road.tiles[self.tile_position+tile].get_max_gear(pot)
         if dice > max_auth:
             return None
@@ -118,9 +121,11 @@ class State:
         ns.dices = list(self.dices)
         if dice == 0: #gaz           
             ns.gaz = self.gaz - 1
+            ns.last_dice = 0
             ns.actual_speed= self.actual_speed
         else:
-            ns.gaz = self.gaz    
+            ns.gaz = self.gaz
+            ns.last_dice = dice    
             ns.dices.remove(dice)
             ns.actual_speed = dice
         return ns
@@ -135,6 +140,7 @@ class State:
         ns.move = self.move + 1       
         ns.dices = [1,2,3,4,5,6]
         ns.gaz = 2
+        ns.last_dice = -1
         ns.actual_speed = self.actual_speed
         if self.actual_speed == 1:
             ns.time = self.time + 50
@@ -149,6 +155,14 @@ class State:
         return ns
         
     def find_successors(self):
+        if self.tile_position >= len(self.road.tiles)-1:
+            if self.last_dice != -1:            
+                ns = self.next_state_stop()
+                ns.last_dice = - 1   
+                self.successors.append(ns)
+                return self.successors
+            else:
+                return None
         auth_dices = self.auth_dices()
         moves = self.road.what_next(self.tile_position,
             self.pos_on_tile)
@@ -159,7 +173,7 @@ class State:
                     n.father = self
                     self.successors.append(n)
         # add stop
-        if self.actual_speed != 0:
+        if self.actual_speed != 0 and self.last_dice != -1:
             self.successors.append(self.next_state_stop())             
         return self.successors
     
@@ -206,31 +220,48 @@ fr = Road()
 Straight = Tile('straight')
 Turn2 = Tile('turn', [2,3])
 fr.append(Straight)
-fr.append(Turn2)
+#fr.append(Turn2)
 fr.append(Straight)
-fr.append(Straight)
-fr.append(Turn2)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
+#fr.append(Straight)
+#fr.append(Turn2)
+#fr.append(Straight)
+#fr.append(Straight)
+#fr.append(Straight)
 fr.inspect()
 
 
 start = State(fr)
 p("start")
 start.inspect()
-suc = start.find_successors()
-p("1st")
-for s in suc:
-    s.inspect()
-    s2 = s.find_successors()
-    for p2 in s2:
-        p("2nd")        
-        p2.inspect()
-        s3 = p2.find_successors()        
-        for p3 in s3:   
-            p("3rd")
-            p3.inspect()
+#suc = start.find_successors()
+#p("1st")
+#for s in suc:
+#    s.inspect()
+#    s2 = s.find_successors()
+#    for p2 in s2:
+#        p("2nd")        
+#        p2.inspect()
+#        s3 = p2.find_successors()        
+#        for p3 in s3:   
+#            p("3rd")
+#            p3.inspect()
 
 
-
+def parcours(root):
+    ret = ""
+    sl = root.find_successors()
+    if root.last_dice != -1:
+        ret = '(' + str(root.last_dice) + ' '
+    else:
+        ret = '(' + str(root.time)
+    if root.move > 20:
+        return "over"
+    if sl != None:
+        for st in sl:
+            ret = ret + ',' + parcours(st)        
+    ret = ret + ')'
+    return ret
+    
+print(parcours(start))
+        
+        
