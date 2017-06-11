@@ -54,7 +54,6 @@ class Road:
         self.tiles.append(tile)
     
     def what_next(self, tile, pos_on_tile):
-        print(tile)
         if tile >= len(self.tiles): # this is the last tile
             return [-10,-10]
         
@@ -215,12 +214,12 @@ class Player:
         self.state = State(road)
         
 
-
+p("T'est")
 fr = Road()
 Straight = Tile('straight')
 Turn2 = Tile('turn', [2,3])
-fr.append(Straight)
-#fr.append(Turn2)
+#fr.append(Straight)
+fr.append(Turn2)
 fr.append(Straight)
 #fr.append(Straight)
 #fr.append(Turn2)
@@ -247,21 +246,54 @@ start.inspect()
 #            p3.inspect()
 
 
-def parcours(root):
-    ret = ""
+def parcours_brace(root):
+    ret = {}
     sl = root.find_successors()
     if root.last_dice != -1:
         ret = '(' + str(root.last_dice) + ' '
     else:
         ret = '(' + str(root.time)
     if root.move > 20:
-        return "over"
+        return "overdose"
     if sl != None:
         for st in sl:
-            ret = ret + ',' + parcours(st)        
+            ret = ret + ',' + parcours_brace(st)        
     ret = ret + ')'
     return ret
+
+def parcours_dot(root):
+    nodes = ""
+    link = ""
+    if root.last_dice != -1:
+        ret = str(root.last_dice) + str(root.tile_position) +str(root.pos_on_tile)
+    else:
+        ret =  str(root.time)
+    if root.move > 20:
+        return ""  
+    nodes = nodes + 'u' + str(id(root)) + '[label=' + ret + '] \n'     
+    nodes = nodes + 'u' + str(id(root)) + '-- {' 
+    if root.successors != None:
+        for st in root.successors:
+           nodes = nodes + 'u' + str(id(st)) + ';' 
+        nodes = nodes + "}\n"  
+        for st in root.successors:
+            nodes = nodes +parcours_dot(st)
+    return nodes
     
-print(parcours(start))
-        
-        
+def nb_leaves(root):
+    if root.successors == []:
+        return 1
+    else:
+        ret = 0
+        for st in root.successors:
+            ret = ret + nb_leaves(st)
+        return ret
+
+
+
+print(parcours_brace(start))
+print(nb_leaves(start))
+dot = parcours_dot(start)
+f = open("test.dot", "w")  
+f.write( " graph  {" + dot + "}" )        
+f.close()
