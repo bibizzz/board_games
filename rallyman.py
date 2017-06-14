@@ -86,11 +86,12 @@ class State:
         self.tile_position = -1
         self.pos_on_tile = 0
         self.time = 0
-        self.dices = [1,2,3,4,5,6]
+        self.dices = [1,2,3,4,5]
         self.gaz = 2
         self.actual_speed = 0
         self.father = None 
         self.successors = []
+        self.finish = False
     
     def auth_dices(self):
         gears = [f for f in self.dices if 
@@ -110,6 +111,9 @@ class State:
         
         max_auth = self.road.tiles[self.tile_position+tile].get_max_gear(pot)
         if dice > max_auth:
+            return None
+        
+        if dice == 0 and self.actual_speed > max_auth:
             return None
         
         ns = State(self.road)
@@ -137,9 +141,10 @@ class State:
         ns.tile_position = self.tile_position
         ns.pos_on_tile = self.pos_on_tile
         ns.move = self.move + 1       
-        ns.dices = [1,2,3,4,5,6]
+        ns.dices = [1,2,3,4,5]
         ns.gaz = 2
         ns.last_dice = -1
+        ns.father = self
         ns.actual_speed = self.actual_speed
         if self.actual_speed == 1:
             ns.time = self.time + 50
@@ -157,7 +162,10 @@ class State:
         if self.tile_position >= len(self.road.tiles)-1:
             if self.last_dice != -1:            
                 ns = self.next_state_stop()
-                ns.last_dice = - 1   
+                ns.last_dice = -1   
+                ns.finish = True
+                ns.father = self
+                
                 self.successors.append(ns)
                 return self.successors
             else:
@@ -177,10 +185,10 @@ class State:
         return self.successors
     
     def inspect(self):
-        p("Move " + str(self.move) + ':' + str(self.time) + 's.' )   
+        p("Move " + str(self.move) + ':' + str(self.time) + 's. ' + str(self.last_dice))   
         p('position ' + str(self.tile_position) + ' on_tile ' + str(self.pos_on_tile))         
         p(str(self.dices) + ' gaz:' + str(self.gaz) + ' speed:' 
-            + str(self.actual_speed))
+            + str(self.actual_speed) + ' Finish ' + str(self.finish))
 
 class Move_leaf:
     def __init__(self, road):
@@ -221,15 +229,14 @@ Turn2 = Tile('turn', [2,3])
 #fr.append(Straight)
 fr.append(Turn2)
 fr.append(Straight)
-#fr.append(Straight)
 #fr.append(Turn2)
-#fr.append(Straight)
+fr.append(Straight)
 #fr.append(Straight)
 #fr.append(Straight)
 fr.inspect()
 
-
 start = State(fr)
+start.actual_speed = 4
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -245,6 +252,8 @@ start.inspect()
 #            p("3rd")
 #            p3.inspect()
 
+histo = [0] *50
+interesting = []
 
 def parcours_brace(root):
     ret = {}
@@ -257,13 +266,13 @@ def parcours_brace(root):
         return "overdose"
     if sl != None:
         for st in sl:
-            ret = ret + ',' + parcours_brace(st)        
+            ret = ret + ',' + parcours_brace(st)   
+
     ret = ret + ')'
     return ret
 
 def parcours_dot(root):
     nodes = ""
-    link = ""
     if root.last_dice != -1:
         ret = str(root.last_dice) + str(root.tile_position) +str(root.pos_on_tile)
     else:
@@ -279,6 +288,24 @@ def parcours_dot(root):
         for st in root.successors:
             nodes = nodes +parcours_dot(st)
     return nodes
+
+def find_min(root):
+    if root.successors == []:
+        if root.finish == True:
+            if (root.time < 60):
+                interesting.append(root)
+            histo[int(root.time/10)] += 1
+            return root.time, root
+        else:
+            return 1000000, None
+    else:
+        min = 100000000
+        for st in root.successors:
+            min_s, st_l = find_min(st) 
+            if min_s <= min:
+                min = min_s
+                ret = st_l
+        return min, ret
     
 def nb_leaves(root):
     if root.successors == []:
@@ -293,7 +320,23 @@ def nb_leaves(root):
 
 print(parcours_brace(start))
 print(nb_leaves(start))
-dot = parcours_dot(start)
-f = open("test.dot", "w")  
-f.write( " graph  {" + dot + "}" )        
-f.close()
+min, min_l = find_min(start)
+p(min_l)
+p(min)
+f = min_l
+while f != None:
+    f.inspect()
+    f = f.father
+    
+p(histo)
+for r in interesting:
+    p("NEW")
+    while r != None:
+        r.inspect()
+        r = r.father
+
+#dot = parcours_dot(start)
+
+#f = open("test.dot", "w")  
+#f.write( " graph  {" + dot + "}" )       
+#f.close()
