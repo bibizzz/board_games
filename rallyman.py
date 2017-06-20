@@ -49,7 +49,7 @@ class Tile:
 class Road:
     def __init__(self):
         self.tiles = []
-
+        
     def append(self, tile)   :
         self.tiles.append(tile)
     
@@ -184,6 +184,12 @@ class State:
             self.successors.append(self.next_state_stop())             
         return self.successors
     
+    def trace_moves(self):
+        r = self        
+        while r != None:
+            p("Move " + str(r.move) + ':' + str(r.time) + 's. ' + str(r.last_dice))  
+            r = r.father
+         
     def inspect(self):
         p("Move " + str(self.move) + ':' + str(self.time) + 's. ' + str(self.last_dice))   
         p('position ' + str(self.tile_position) + ' on_tile ' + str(self.pos_on_tile))         
@@ -229,7 +235,9 @@ Turn2 = Tile('turn', [2,3])
 #fr.append(Straight)
 fr.append(Turn2)
 fr.append(Straight)
-#fr.append(Turn2)
+#fr.append(Straight)
+#fr.append(Straight)
+fr.append(Turn2)
 fr.append(Straight)
 #fr.append(Straight)
 #fr.append(Straight)
@@ -292,7 +300,7 @@ def parcours_dot(root):
 def find_min(root):
     if root.successors == []:
         if root.finish == True:
-            if (root.time < 60):
+            if (root.time < 50):
                 interesting.append(root)
             histo[int(root.time/10)] += 1
             return root.time, root
@@ -316,9 +324,80 @@ def nb_leaves(root):
             ret = ret + nb_leaves(st)
         return ret
 
+def reduce_fifo(fifo, max_time):
+    ret= []    
+    min_ref = 100000
+    for s in fifo:
+        if s.time < min_ref:
+            min_ref = s.time
+    p(min_ref)
+    min_supress = min_ref + max_time
+    
+    for s in fifo:
+        if s.time <= min_supress:
+            ret.append(s)
+    return ret
+            
+
+min_tile = [10000] * 20
 
 
-print(parcours_brace(start))
+tile_time = [1000] * 20
+tile_number = [0] * 20 
+
+def parcours_tile(node, road):
+    nb_tiles = len(road.tiles)
+    node.find_successors()
+    fifo = []
+    for s in node.successors:
+        fifo.append(s)
+    for pos in range(nb_tiles):
+        next_fifo = []
+        while len(fifo) > 0:
+            cur = fifo.pop(0) 
+            if cur.tile_position > pos:
+                next_fifo.append(cur)
+            else:
+                cur.find_successors()
+                for lower in cur.successors:
+                    fifo.append(lower)
+        print('Tile ' + str(pos) + ' finished. Next: ' + str(len(next_fifo)) )
+        fifo  = next_fifo
+        if len(fifo) > 1000 and road.tiles[pos].type == 'straight' :
+            p("reduce!")
+            fifo = reduce_fifo(fifo, 100)
+            p(len(fifo))
+
+def parcours_largeur(node, max = 1000):
+    fifo = []
+    fifo.append(node)
+    cur_move = node.move
+    while len(fifo) > 0:
+        cur = fifo.pop(0)
+        if cur.time < min_tile[cur.tile_position]:
+            min_tile[cur.tile_position] = cur.time
+        if cur.move > cur_move:
+            cur_move = cur.move
+            p("##########Cur move: " + str(cur_move) + ' ' + str(1+len(fifo)))
+            if (len(fifo) > 100000): #reduce !!!
+                p("reduce!")
+                fifo = reduce_fifo(fifo, 100)
+                p(len(fifo))
+        if cur.move < max:
+            cur.find_successors()
+            for lower in cur.successors:
+                fifo.append(lower)
+
+
+
+
+#print(parcours_brace(start))
+
+#parcours_largeur(start)
+parcours_tile(start, fr)
+
+p(min_tile)
+print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
 p(min_l)
@@ -328,12 +407,10 @@ while f != None:
     f.inspect()
     f = f.father
     
-p(histo)
-for r in interesting:
-    p("NEW")
-    while r != None:
-        r.inspect()
-        r = r.father
+#p(histo)
+#for r in interesting:
+#    p("NEW")
+#    r.trace_moves()
 
 #dot = parcours_dot(start)
 
