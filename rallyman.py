@@ -243,7 +243,7 @@ fr.append(Straight)
 fr.append(Straight)
 #fr.append(Straight)
 fr.append(Straight)
-fr.append(Turn2)
+#fr.append(Turn2)
 fr.append(Straight)
 #fr.append(Straight)
 #fr.append(Straight)
@@ -303,11 +303,39 @@ def parcours_dot(root):
         for st in root.successors:
             nodes = nodes +parcours_dot(st)
     return nodes
+
+def up_dot(leaf):
+    if leaf.father == None:
+        labels = ""
+        if leaf.passed == True:
+            if leaf.last_dice != -1:
+                ret = str(leaf.last_dice) + str(leaf.tile_position) +str(leaf.pos_on_tile)
+            else:
+                ret =  str(leaf.time)
+            labels = 'u' + str(id(leaf)) + '[label=' + ret + '] \n'  
+            leaf.passed = False
+        return labels, 'u' + str(id(leaf)) +';\n'   
+    else:
+        labels = ""
+        if leaf.passed == True:
+            if leaf.last_dice != -1:
+                ret = str(leaf.last_dice) + str(leaf.tile_position) +str(leaf.pos_on_tile)
+            else:
+                ret =  str(leaf.time)
+            labels = 'u' + str(id(leaf)) + '[label=' + ret + '] \n'  
+            leaf.passed = False
+        ups = up_dot(leaf.father)
+        return labels + ups[0] ,   'u' + str(id(leaf)) + "--" + ups[1]
+        
     
-#def parcours_dot_sons(sons):
-#    nodes = ""    
-#        nodes = nodes + 'u' + str(id(son)) + '[label=' + ret + '] \n' 
-#        while son != None:
+def parcours_dot_sons(sons):    
+    label = ""
+    ret = ""    
+    for son in sons:
+        r = up_dot(son)
+        label += r[0]
+        ret += r[1]
+    return label + ret
             
 
 def find_min(root):
@@ -345,8 +373,7 @@ def reduce_fifo(fifo, max_time):
         if s.time < min_ref:
             min_ref = s.time
     p(min_ref)
-    min_supress = min_ref + max_time
-    
+    min_supress = min_ref + max_time   
     for s in fifo:
         if s.time <= min_supress:
             ret.append(s)
@@ -370,10 +397,10 @@ def parcours_tile(node, road):
     for pos in range(nb_tiles):
         histo_tile = [0] * 40
         next_fifo = deque()
-#        if  road.tiles[pos].type == 'straight' and pos >= 2:
-#            p("reduce!")
-#            fifo = reduce_fifo(fifo, 40)
-#            p(len(fifo))
+        if  road.tiles[pos].type == 'straight' and pos >= 2:
+            p("reduce!")
+            fifo = reduce_fifo(fifo, 40)
+            p(len(fifo))
         while len(fifo) > 0:
             cur = fifo.popleft() 
             if cur.tile_position > pos:
@@ -440,7 +467,8 @@ for r in interesting:
     r.trace_moves()
 
 #dot = parcours_dot(start)
+dot = parcours_dot_sons(interesting)
 
-#f = open("test.dot", "w")  
-#f.write( " graph  {" + dot + "}" )       
-#f.close()
+f = open("test.dot", "w")  
+f.write( " graph  {" + dot + "}" )       
+f.close()
