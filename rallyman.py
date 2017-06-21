@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from collections import deque
 def p(s):
     print(s)
 
@@ -87,11 +89,12 @@ class State:
         self.pos_on_tile = 0
         self.time = 0
         self.dices = [1,2,3,4,5]
-        self.gaz = 2
+        self.gaz = 1
         self.actual_speed = 0
         self.father = None 
         self.successors = []
         self.finish = False
+        self.passed = False
     
     def auth_dices(self):
         gears = [f for f in self.dices if 
@@ -141,8 +144,8 @@ class State:
         ns.tile_position = self.tile_position
         ns.pos_on_tile = self.pos_on_tile
         ns.move = self.move + 1       
-        ns.dices = [1,2,3,4,5]
-        ns.gaz = 2
+#          ns.dices = [1,2,3,4,5]
+#        ns.gaz = 1
         ns.last_dice = -1
         ns.father = self
         ns.actual_speed = self.actual_speed
@@ -159,6 +162,7 @@ class State:
         return ns
         
     def find_successors(self):
+        self.passed = True
         if self.tile_position >= len(self.road.tiles)-1:
             if self.last_dice != -1:            
                 ns = self.next_state_stop()
@@ -187,7 +191,7 @@ class State:
     def trace_moves(self):
         r = self        
         while r != None:
-            p("Move " + str(r.move) + ':' + str(r.time) + 's. ' + str(r.last_dice))  
+            p("Move " + str(r.move) + ':' + str(r.time) + 's. ' + str(r.last_dice) + ' ' + str(id(r)))  
             r = r.father
          
     def inspect(self):
@@ -228,15 +232,17 @@ class Player:
         self.state = State(road)
         
 
-p("T'est")
+p("Test")
 fr = Road()
 Straight = Tile('straight')
 Turn2 = Tile('turn', [2,3])
+Turn1 = Tile('turn', [1,2])
 #fr.append(Straight)
-fr.append(Turn2)
+fr.append(Turn1)
+fr.append(Straight)
 fr.append(Straight)
 #fr.append(Straight)
-#fr.append(Straight)
+fr.append(Straight)
 fr.append(Turn2)
 fr.append(Straight)
 #fr.append(Straight)
@@ -244,7 +250,8 @@ fr.append(Straight)
 fr.inspect()
 
 start = State(fr)
-start.actual_speed = 4
+start.actual_speed = 3
+start.gaz = 1
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -296,11 +303,17 @@ def parcours_dot(root):
         for st in root.successors:
             nodes = nodes +parcours_dot(st)
     return nodes
+    
+#def parcours_dot_sons(sons):
+#    nodes = ""    
+#        nodes = nodes + 'u' + str(id(son)) + '[label=' + ret + '] \n' 
+#        while son != None:
+            
 
 def find_min(root):
     if root.successors == []:
         if root.finish == True:
-            if (root.time < 50):
+            if (root.time == 50):
                 interesting.append(root)
             histo[int(root.time/10)] += 1
             return root.time, root
@@ -325,8 +338,9 @@ def nb_leaves(root):
         return ret
 
 def reduce_fifo(fifo, max_time):
-    ret= []    
+    ret = deque() 
     min_ref = 100000
+    fifo = list(fifo)
     for s in fifo:
         if s.time < min_ref:
             min_ref = s.time
@@ -341,32 +355,43 @@ def reduce_fifo(fifo, max_time):
 
 min_tile = [10000] * 20
 
-
+histo_tile = [0] * 50
+tiles_distrib = histo_tile * 10
 tile_time = [1000] * 20
 tile_number = [0] * 20 
 
 def parcours_tile(node, road):
     nb_tiles = len(road.tiles)
     node.find_successors()
-    fifo = []
+    fifo = deque()
+    next_fifo = deque()
     for s in node.successors:
         fifo.append(s)
     for pos in range(nb_tiles):
-        next_fifo = []
+        histo_tile = [0] * 40
+        next_fifo = deque()
+#        if  road.tiles[pos].type == 'straight' and pos >= 2:
+#            p("reduce!")
+#            fifo = reduce_fifo(fifo, 40)
+#            p(len(fifo))
         while len(fifo) > 0:
-            cur = fifo.pop(0) 
+            cur = fifo.popleft() 
             if cur.tile_position > pos:
+                histo_tile[int(cur.time/10)] += 1
                 next_fifo.append(cur)
             else:
-                cur.find_successors()
-                for lower in cur.successors:
-                    fifo.append(lower)
+                if min_tile[pos] > cur.time:
+                    min_tile[pos] = cur.time   
+                if cur.passed == False:
+                    cur.find_successors()
+                    for lower in cur.successors:
+                        fifo.append(lower)
+                else:
+                    p('passed')
         print('Tile ' + str(pos) + ' finished. Next: ' + str(len(next_fifo)) )
+        p(histo_tile)
         fifo  = next_fifo
-        if len(fifo) > 1000 and road.tiles[pos].type == 'straight' :
-            p("reduce!")
-            fifo = reduce_fifo(fifo, 100)
-            p(len(fifo))
+
 
 def parcours_largeur(node, max = 1000):
     fifo = []
@@ -407,10 +432,12 @@ while f != None:
     f.inspect()
     f = f.father
     
-#p(histo)
-#for r in interesting:
-#    p("NEW")
-#    r.trace_moves()
+p(histo)
+p(str(len(interesting))+' interesting moves')
+for r in interesting:
+    p("NEW")
+    p(id(r))
+    r.trace_moves()
 
 #dot = parcours_dot(start)
 
