@@ -30,17 +30,37 @@ class Tile:
             if pos_on_tile == -1:
                 return [0]
             elif pos_on_tile == 0:
-                return [-1]  
+                return [-1]
+        elif self.type == 'short_turn':
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé on sort tout de suite
+                return [-1] 
+        elif self.type == 'bump':
+            if pos_on_tile == -1:
+                return [0]
+            elif pos_on_tile == 0:
+                return [-1]                
         else:
             return [-5]
     def get_max_gear(self, pos_on_tile):
         if self.type == 'straight':
             return 10
-        elif self.type == 'turn':
+        elif 'turn' in self.type:
             if pos_on_tile == 0: #corde
                 return self.max_gears[0]
             else:  #dérapage
                 return self.max_gears[1]
+        elif self.type == 'bump':
+            return self.max_gears[0]
         else:
             p("Troubles w/h max_gear")
             return -50
@@ -240,6 +260,8 @@ class Player:
 p("Test")
 fr = Road()
 Straight = Tile('straight')
+Bump4 = Tile('bump', [4])
+STurn3 = Tile('short_turn', [3,4])
 Turn3 = Tile('turn', [3,4])
 Turn2 = Tile('turn', [2,3])
 Turn1 = Tile('turn', [1,2])
@@ -249,13 +271,24 @@ fr.append(Straight)
 fr.append(Straight)
 fr.append(Straight)
 fr.append(Straight)
-#fr.append(Turn2)
-#fr.append(Straight)
-#fr.append(Straight)
-#fr.append(Straight)
-#fr.append(Straight)
-#fr.append(Turn3)
-#fr.append(Straight)
+fr.append(Turn2)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Turn3)
+fr.append(Straight)
+fr.append(STurn3)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Bump4)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Straight)
+fr.append(Turn1)
+fr.append(Straight)
 fr.inspect()
 
 start = State(fr)
@@ -389,12 +422,12 @@ def reduce_fifo(fifo, max_time):
     return ret
             
 
-min_tile = [10000] * 20
+min_tile = [10000] * 100
 
-histo_tile = [0] * 50
-tiles_distrib = histo_tile * 10
-tile_time = [1000] * 20
-tile_number = [0] * 20 
+histo_tile = [0] * 10
+
+tile_time = [1000] * 100
+tile_number = [0] * 100 
 
 hash_state = {}
 
@@ -412,12 +445,13 @@ def parcours_tile(node, road):
         next_fifo = deque()
         if  road.tiles[pos].type == 'straight' and pos >= 2:
             p("reduce!")
-            fifo = reduce_fifo(fifo, 40)
+            fifo = reduce_fifo(fifo, 100)
             p(len(fifo))
         while len(fifo) > 0:
             cur = fifo.popleft() 
             count += 1
             if cur.tile_position > pos:
+                #p(int(cur.time/10))
                 histo_tile[int(cur.time/10)] += 1
                 next_fifo.append(cur)
             else:
