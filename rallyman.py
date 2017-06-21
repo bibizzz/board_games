@@ -87,7 +87,6 @@ class State:
         self.time = 0
         self.tile_position = -1
         self.pos_on_tile = 0
-        self.time = 0
         self.dices = [1,2,3,4,5]
         self.gaz = 1
         self.actual_speed = 0
@@ -95,6 +94,12 @@ class State:
         self.successors = []
         self.finish = False
         self.passed = False
+    
+    def h_state(self):
+        #paramètres importants
+        return str([self.time, self.tile_position, self.pos_on_tile, self.dices,  
+                self.gaz, self.actual_speed])
+            
     
     def auth_dices(self):
         gears = [f for f in self.dices if 
@@ -235,17 +240,21 @@ class Player:
 p("Test")
 fr = Road()
 Straight = Tile('straight')
+Turn3 = Tile('turn', [3,4])
 Turn2 = Tile('turn', [2,3])
 Turn1 = Tile('turn', [1,2])
 #fr.append(Straight)
 fr.append(Turn1)
 fr.append(Straight)
 fr.append(Straight)
-#fr.append(Straight)
+fr.append(Straight)
 fr.append(Straight)
 #fr.append(Turn2)
-fr.append(Straight)
 #fr.append(Straight)
+#fr.append(Straight)
+#fr.append(Straight)
+#fr.append(Straight)
+#fr.append(Turn3)
 #fr.append(Straight)
 fr.inspect()
 
@@ -338,10 +347,10 @@ def parcours_dot_sons(sons):
     return label + ret
             
 
-def find_min(root):
+def find_min(root, interesting_time = -1):
     if root.successors == []:
         if root.finish == True:
-            if (root.time == 50):
+            if (root.time == interesting_time):
                 interesting.append(root)
             histo[int(root.time/10)] += 1
             return root.time, root
@@ -350,7 +359,7 @@ def find_min(root):
     else:
         min = 100000000
         for st in root.successors:
-            min_s, st_l = find_min(st) 
+            min_s, st_l = find_min(st, interesting_time) 
             if min_s <= min:
                 min = min_s
                 ret = st_l
@@ -387,8 +396,11 @@ tiles_distrib = histo_tile * 10
 tile_time = [1000] * 20
 tile_number = [0] * 20 
 
+hash_state = {}
+
 def parcours_tile(node, road):
     nb_tiles = len(road.tiles)
+    hash_state[node.h_state()] = True
     node.find_successors()
     fifo = deque()
     next_fifo = deque()
@@ -396,6 +408,7 @@ def parcours_tile(node, road):
         fifo.append(s)
     for pos in range(nb_tiles):
         histo_tile = [0] * 40
+        count = 0
         next_fifo = deque()
         if  road.tiles[pos].type == 'straight' and pos >= 2:
             p("reduce!")
@@ -403,6 +416,7 @@ def parcours_tile(node, road):
             p(len(fifo))
         while len(fifo) > 0:
             cur = fifo.popleft() 
+            count += 1
             if cur.tile_position > pos:
                 histo_tile[int(cur.time/10)] += 1
                 next_fifo.append(cur)
@@ -410,12 +424,20 @@ def parcours_tile(node, road):
                 if min_tile[pos] > cur.time:
                     min_tile[pos] = cur.time   
                 if cur.passed == False:
-                    cur.find_successors()
-                    for lower in cur.successors:
-                        fifo.append(lower)
+                    if cur.h_state() not in hash_state:
+                        hash_state[cur.h_state()] =  True
+                        cur.find_successors()
+                        cur.passed = True
+                        for lower in cur.successors:
+                            fifo.append(lower)  
+                    else:
+                        cur.successors = []
+                        cur.passed = True
                 else:
                     p('passed')
         print('Tile ' + str(pos) + ' finished. Next: ' + str(len(next_fifo)) )
+        print('hash_len ' + str(len(hash_state)) )
+        print(str(count))
         p(histo_tile)
         fifo  = next_fifo
 
@@ -452,6 +474,7 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
+min, min_l = find_min(start, min)
 p(min_l)
 p(min)
 f = min_l
@@ -460,11 +483,12 @@ while f != None:
     f = f.father
     
 p(histo)
-p(str(len(interesting))+' interesting moves')
+
 for r in interesting:
     p("NEW")
     p(id(r))
     r.trace_moves()
+p(str(len(interesting))+' interesting moves')
 
 #dot = parcours_dot(start)
 dot = parcours_dot_sons(interesting)
