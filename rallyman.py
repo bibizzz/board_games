@@ -3,6 +3,28 @@
 from collections import deque
 def p(s):
     print(s)
+    
+class MRC:
+    def __init__(self, tire = 'asphalte'):
+        self.tire_type = tire
+        self.dices_max = 5
+        self.degat = 0
+        self.gaz_max = 2
+        self.crevaison = 0
+        self.retrogade = False
+                  
+    def degats(self, nb):
+        self.degat += nb
+
+    
+    def crevaison(self):
+        self.crevaison += 1
+    
+    def nb_dices(self, road_type):
+        if self.tire_type == 'asphalte':
+            if road_type == 'asphalte':
+                return 5-self.degat, 2-self.crevaison
+                
 
 class Tile:
     def __init__(self, type = 'straight', max_gears = []):
@@ -24,6 +46,30 @@ class Tile:
                 # 2 deuxième partie du virage dérapé
                 return [0,3]
             elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [-1]
+        elif self.type == 'straight':
+            if pos_on_tile == -1:
+                return [0]
+            elif pos_on_tile == 0:
+                return [-1]
+        elif self.type == 'long_turn':
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [0,3]
+            elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [0,4]
+            elif pos_on_tile == 4:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
         elif self.type == 'straight':
@@ -97,18 +143,21 @@ class Road:
         for tile in self.tiles:
             tile.inspect()
             
-            
-        
+                  
 class State:
-    def __init__(self,road):
+    def __init__(self,road, mrc = MRC()):
+        self.double_low = True
         self.last_dice = -1
         self.road = road
+        self.mrc = mrc
         self.move = 0
         self.time = 0
         self.tile_position = -1
         self.pos_on_tile = 0
         self.dices = [1,2,3,4,5]
-        self.gaz = 1
+        d, g = 5 , 2
+        self.nb_dices = d
+        self.gaz = g
         self.actual_speed = 0
         self.father = None 
         self.successors = []
@@ -122,8 +171,12 @@ class State:
             
     
     def auth_dices(self):
+        if self.double_low:
+            minus = 2
+        else:
+            minus = 1
         gears = [f for f in self.dices if 
-            f >= self.actual_speed-1 and 
+            f >= self.actual_speed-minus and 
             f <= self.actual_speed +1]
         if self.actual_speed != 0:
             if self.gaz > 0:            
@@ -143,6 +196,10 @@ class State:
         
         if dice == 0 and self.actual_speed > max_auth:
             return None
+        
+        # bump ?
+        if self.road.tiles[self.tile_position].type == 'bump' and self.actual_speed == self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
+            tile += 1
         
         ns = State(self.road)
         ns.tile_position = self.tile_position + tile
@@ -261,39 +318,122 @@ p("Test")
 fr = Road()
 Straight = Tile('straight')
 Bump4 = Tile('bump', [4])
+Bump3 = Tile('bump', [3])
+STurn4 = Tile('short_turn', [4,5])
 STurn3 = Tile('short_turn', [3,4])
+STurn2 = Tile('short_turn', [2,3])
+STurn1 = Tile('short_turn', [1,2])
 Turn3 = Tile('turn', [3,4])
 Turn2 = Tile('turn', [2,3])
 Turn1 = Tile('turn', [1,2])
+LTurn1 = Tile('long_turn', [1,2])
 #fr.append(Straight)
-fr.append(Turn1)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Turn2)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Turn3)
-fr.append(Straight)
-fr.append(STurn3)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Bump4)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Straight)
-fr.append(Turn1)
-fr.append(Straight)
-fr.inspect()
+game_no = 551
+if game_no == 539:
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(STurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump4)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+elif game_no == 709:
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+elif game_no == 553:
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump3)
+    fr.append(Straight)
+    fr.append(Straight)
+elif game_no == 550:
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump3)
+    fr.append(Straight)
+    fr.append(Straight)
+elif game_no == 551:
+    fr.append(STurn2)
+    fr.append(STurn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(LTurn1)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(STurn1)
+    fr.append(STurn1)    
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(STurn2)
+    fr.append(STurn2)    
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(STurn2)
+    fr.append(STurn2)    
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump4) # simulation bump
+    fr.append(Straight)
+    fr.append(Straight)
 
+
+fr.inspect()
 start = State(fr)
-start.actual_speed = 3
-start.gaz = 1
+start.actual_speed = 4
+start.gaz = 2
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -309,7 +449,7 @@ start.inspect()
 #            p("3rd")
 #            p3.inspect()
 
-histo = [0] *50
+histo = [0] * 50
 interesting = []
 
 def parcours_brace(root):
@@ -445,14 +585,14 @@ def parcours_tile(node, road):
         next_fifo = deque()
         if  road.tiles[pos].type == 'straight' and pos >= 2:
             p("reduce!")
-            fifo = reduce_fifo(fifo, 100)
+            fifo = reduce_fifo(fifo, 110)
             p(len(fifo))
         while len(fifo) > 0:
             cur = fifo.popleft() 
             count += 1
             if cur.tile_position > pos:
                 #p(int(cur.time/10))
-                histo_tile[int(cur.time/10)] += 1
+                #histo_tile[int(cur.time/10)] += 1
                 next_fifo.append(cur)
             else:
                 if min_tile[pos] > cur.time:
