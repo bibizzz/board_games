@@ -48,6 +48,25 @@ class Tile:
             elif pos_on_tile == 3:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
+        elif self.type == 'k_turn':
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1,9]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [0,3]
+            elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [-1]
+            elif pos_on_tile == 9:
+                # 3ème partie du virage dérapé: on sort après
+                return [-1]
         elif self.type == 'straight':
             if pos_on_tile == -1:
                 return [0]
@@ -100,6 +119,14 @@ class Tile:
     def get_max_gear(self, pos_on_tile):
         if self.type == 'straight':
             return 10
+        elif self.type == 'k_turn':
+            if pos_on_tile == 0: #corde
+                return self.max_gears[0]
+            elif pos_on_tile == 8:
+                return self.max_gears[2]
+            else:  #dérapage
+                return self.max_gears[1]
+            
         elif 'turn' in self.type:
             if pos_on_tile == 0: #corde
                 return self.max_gears[0]
@@ -110,6 +137,11 @@ class Tile:
         else:
             p("Troubles w/h max_gear")
             return -50
+    def get_min_gear(self, pos_on_tile):
+        if 'turn' in self.type:
+            if pos_on_tile in [1,2,3,4]:
+                return self.max_gears[1]
+        return 0
     def inspect(self):
         print(self.type + ';' + str(self.max_gears))
                 
@@ -146,7 +178,7 @@ class Road:
                   
 class State:
     def __init__(self,road, mrc = MRC()):
-        self.double_low = True
+        self.double_low = False
         self.last_dice = -1
         self.road = road
         self.mrc = mrc
@@ -198,9 +230,16 @@ class State:
         max_auth = self.road.tiles[self.tile_position+tile].get_max_gear(pot)
         if dice > max_auth:
             return None
-        
         if dice == 0 and self.actual_speed > max_auth:
             return None
+
+        min_auth = self.road.tiles[self.tile_position+tile].get_min_gear(pot)
+        if dice < min_auth:
+            return None
+        if dice == 0 and self.actual_speed < min_auth:
+            return None
+        
+
         
         # bump ?
         if self.road.tiles[self.tile_position].type == 'bump' and self.actual_speed == self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
@@ -329,13 +368,161 @@ STurn4 = Tile('short_turn', [4,5])
 STurn3 = Tile('short_turn', [3,4])
 STurn2 = Tile('short_turn', [2,3])
 STurn1 = Tile('short_turn', [1,2])
+KTurn3 = Tile('k_turn', [3,4,4])
+KTurn2 = Tile('k_turn', [2,3,3])
+KTurn1 = Tile('k_turn', [1,2,2])
 Turn4 = Tile('turn', [4,5])
 Turn3 = Tile('turn', [3,4])
 Turn2 = Tile('turn', [2,3])
 Turn1 = Tile('turn', [1,2])
 LTurn1 = Tile('long_turn', [1,2])
 #fr.append(Straight)
-game_no = 1489
+game_no = 1523
+if game_no == 1523:
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn2)  
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+if game_no == 515:
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)  
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn3)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+if game_no == 1522:
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump4)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn1)
+    fr.append(Straight)
+    fr.append(KTurn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)   
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn4)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn3)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn4)    
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+
 if game_no == 539:
     fr.append(Turn1)
     fr.append(Straight)
@@ -517,7 +704,7 @@ elif game_no == 1489:
 
 fr.inspect()
 start = State(fr)
-start.actual_speed = 3
+start.actual_speed = 0
 p("start")
 start.inspect()
 #suc = start.find_successors()
