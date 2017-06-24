@@ -65,8 +65,73 @@ class Tile:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
             elif pos_on_tile == 9:
+             #corde
+                return [-1]
+        elif self.type == 'sk_turn_after': #avec stright après
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1,9]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [0,3]
+            elif pos_on_tile == 3:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
+            elif pos_on_tile == 9:
+                 #corde spéciale
+                return [-2]
+        elif self.type == 'sk_turn_bfr': #avec stright avant
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [5,9]
+            elif pos_on_tile == 5:
+                # 0 corde la prochaine case sort
+                return [0,1]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [0,3]
+            elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [-1]
+            elif pos_on_tile == 9:
+                return [-1]
+        elif self.type == 'dk_turn': #avec stright avant après
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [5,9]
+            elif pos_on_tile == 5:
+                # 0 corde la prochaine case sort
+                return [0,1]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [6]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [0,3]
+            elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [6]
+            elif pos_on_tile == 6:
+                # straight après
+                return [-1]
+            elif pos_on_tile == 9:
+                return [-1]
+        
         elif self.type == 'straight':
             if pos_on_tile == -1:
                 return [0]
@@ -119,11 +184,13 @@ class Tile:
     def get_max_gear(self, pos_on_tile):
         if self.type == 'straight':
             return 10
-        elif self.type == 'k_turn':
+        elif 'k_turn' in self.type:
             if pos_on_tile == 0: #corde
                 return self.max_gears[0]
-            elif pos_on_tile == 8:
+            elif pos_on_tile == 9:
                 return self.max_gears[2]
+            elif pos_on_tile == 5:
+                return 10
             else:  #dérapage
                 return self.max_gears[1]
             
@@ -144,7 +211,26 @@ class Tile:
         return 0
     def inspect(self):
         print(self.type + ';' + str(self.max_gears))
-                
+
+
+Straight = Tile('straight')
+Bump4 = Tile('bump', [4])
+Bump3 = Tile('bump', [3])
+STurn4 = Tile('short_turn', [4,5])
+STurn3 = Tile('short_turn', [3,4])
+STurn2 = Tile('short_turn', [2,3])
+STurn1 = Tile('short_turn', [1,2])
+KTurn3 = Tile('k_turn', [3,4,4])
+KTurn2 = Tile('k_turn', [2,3,3])
+KTurn1 = Tile('k_turn', [1,2,2])
+SKBTurn3 = Tile('sk_turn_bfr', [3,4,4])
+SKATurn3 = Tile('sk_turn_after', [3,4,4])
+DKTurn1 = Tile('dk_turn', [1,2,2])
+Turn4 = Tile('turn', [4,5])
+Turn3 = Tile('turn', [3,4])
+Turn2 = Tile('turn', [2,3])
+Turn1 = Tile('turn', [1,2])
+LTurn1 = Tile('long_turn', [1,2])          
         
 class Road:
     def __init__(self):
@@ -152,6 +238,10 @@ class Road:
         
     def append(self, tile)   :
         self.tiles.append(tile)
+    
+    def add_s(self, num):
+        for i in range(num):
+            self.tiles.append(Straight)
     
     def what_next(self, tile, pos_on_tile):
         if tile >= len(self.tiles): # this is the last tile
@@ -164,6 +254,12 @@ class Road:
             for pot in pot_l:
                 ret.append([1,pot])
             return ret
+        elif nxt == [-2]: #jump over a tile
+            pot_l = self.tiles[tile+2].next_pos_on_tile(-1)
+            ret = []
+            for pot in pot_l:
+                ret.append([2,pot])
+            return ret
         else: #same tile
             ret = []
             for pot in nxt:
@@ -175,7 +271,7 @@ class Road:
         for tile in self.tiles:
             tile.inspect()
             
-                  
+             
 class State:
     def __init__(self,road, mrc = MRC()):
         self.double_low = False
@@ -195,9 +291,10 @@ class State:
         self.successors = []
         self.finish = False
         self.passed = False
+        self.nb_seconds_win = 0
     
     def h_state(self):
-        #paramètres importants
+        #paramètres différentiateurs
         return str([self.time, self.tile_position, self.pos_on_tile, self.dices,  
                 self.gaz, self.actual_speed])
             
@@ -238,14 +335,16 @@ class State:
             return None
         if dice == 0 and self.actual_speed < min_auth:
             return None
-        
-
-        
+             
         # bump ?
         if self.road.tiles[self.tile_position].type == 'bump' and self.actual_speed == self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
             tile += 1
         
         ns = State(self.road)
+        if self.last_dice != -1:
+            ns.nb_seconds_win = self.nb_seconds_win + 1
+        else:
+            ns.nb_seconds_win = self.nb_seconds_win
         ns.tile_position = self.tile_position + tile
         ns.time = self.time
         ns.move = self.move + 1
@@ -274,6 +373,7 @@ class State:
 #          ns.dices = [1,2,3,4,5]
 #        ns.gaz = 1
         ns.last_dice = -1
+        ns.nb_seconds_win = self.nb_seconds_win
         ns.father = self
         ns.actual_speed = self.actual_speed
         if self.actual_speed == 1:
@@ -322,7 +422,7 @@ class State:
             r = r.father
          
     def inspect(self):
-        p("Move " + str(self.move) + ':' + str(self.time) + 's. ' + str(self.last_dice))   
+        p("Move " + str(self.move) + ':' + str(self.time) + 's. -' + str(self.nb_seconds_win) + ' ' + str(self.last_dice))   
         p('position ' + str(self.tile_position) + ' on_tile ' + str(self.pos_on_tile))         
         p(str(self.dices) + ' gaz:' + str(self.gaz) + ' speed:' 
             + str(self.actual_speed) +  'nb_d:' + str(self.nb_dices)  + ' Finish ' + str(self.finish))
@@ -361,23 +461,79 @@ class Player:
 
 p("Test")
 fr = Road()
-Straight = Tile('straight')
-Bump4 = Tile('bump', [4])
-Bump3 = Tile('bump', [3])
-STurn4 = Tile('short_turn', [4,5])
-STurn3 = Tile('short_turn', [3,4])
-STurn2 = Tile('short_turn', [2,3])
-STurn1 = Tile('short_turn', [1,2])
-KTurn3 = Tile('k_turn', [3,4,4])
-KTurn2 = Tile('k_turn', [2,3,3])
-KTurn1 = Tile('k_turn', [1,2,2])
-Turn4 = Tile('turn', [4,5])
-Turn3 = Tile('turn', [3,4])
-Turn2 = Tile('turn', [2,3])
-Turn1 = Tile('turn', [1,2])
-LTurn1 = Tile('long_turn', [1,2])
+
 #fr.append(Straight)
-game_no = 1523
+game_no = 1536
+if game_no == 1536:
+    #270 s dans ce cas
+    # 270s avec l'erreur
+    # 270s avec une erreur de gaz qui manque dès le 1er coup
+#    fr.add_s(2)
+#    fr.append(KTurn2)
+#    fr.add_s(3)
+    fr.add_s(1)
+    fr.append(SKATurn3)
+    fr.add_s(2)
+    fr.append(KTurn3)
+    fr.add_s(3)
+    fr.append(Tile('k_turn', [2,3,4]))
+    fr.add_s(3)
+    fr.append(KTurn2)
+    fr.add_s(2)    
+    fr.append(STurn3)    
+    fr.append(STurn3)
+    fr.add_s(2)
+    fr.append(Turn2)
+    fr.add_s(2)
+    fr.append(Turn1)
+    fr.add_s(3)
+    fr.append(Turn1)
+    fr.add_s(9)  
+    fr.append(Turn1)
+    fr.add_s(3)
+    fr.append(Turn1)
+    fr.add_s(5)
+    fr.append(Turn4)
+    fr.add_s(3)  
+    fr.append(Turn1)  
+    fr.append(Turn1)     
+    fr.add_s(3)  
+    fr.append(KTurn3)
+    fr.add_s(2)
+    fr.append(Turn4)
+    fr.add_s(1)
+if game_no == 1525 or game_no == 1537:
+    #210 s dans ce cas
+    fr.append(Turn4)
+    fr.append(Straight)
+    fr.append(DKTurn1)    
+    fr.append(Straight)
+    fr.append(Turn4)
+    fr.append(Turn4)
+    fr.add_s(2)
+    fr.append(Turn3)
+    fr.add_s(1)
+    fr.append(Turn2)
+    fr.add_s(2)
+    fr.append(KTurn2)
+    fr.add_s(3)
+    fr.append(Turn4)
+    fr.add_s(4)    
+    fr.append(Turn2)
+    fr.add_s(2)
+    fr.append(KTurn3)
+    fr.add_s(3)
+    fr.append(KTurn2)
+    fr.add_s(2)
+    fr.append(Turn2)
+    fr.add_s(2)  
+    fr.append(Turn1)
+    fr.add_s(3)
+    fr.append(Turn1)
+    fr.add_s(9)
+    fr.append(STurn4)
+    fr.add_s(3)     
+
 if game_no == 1523:
     fr.append(Straight)
     fr.append(Straight)
@@ -392,8 +548,8 @@ if game_no == 1523:
     fr.append(Straight)
     fr.append(KTurn3)
     fr.append(Straight)
-    fr.append(Straight)
-    fr.append(KTurn3)
+ #   fr.append(Straight) #weird K..
+    fr.append(SKBTurn3)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(Straight)
@@ -622,9 +778,9 @@ elif game_no == 550:
     fr.append(Straight)
     fr.append(Straight)
 elif game_no == 551:
-    fr.append(STurn2)
-    fr.append(STurn2)
-    fr.append(Straight)
+#    fr.append(STurn2)
+#    fr.append(STurn2)
+#    fr.append(Straight)
     fr.append(Straight)
     fr.append(LTurn1)
     fr.append(Straight)
@@ -704,7 +860,7 @@ elif game_no == 1489:
 
 fr.inspect()
 start = State(fr)
-start.actual_speed = 0
+start.actual_speed = 5
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -934,6 +1090,9 @@ for r in interesting:
     p(id(r))
     r.trace_moves()
 p(str(len(interesting))+' interesting moves')
+
+for r in interesting:
+    r.inspect()
 
 #dot = parcours_dot(start)
 dot = parcours_dot_sons(interesting)
