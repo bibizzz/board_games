@@ -239,6 +239,7 @@ STurn3 = Tile('short_turn', [3,4])
 DirtTurn3 = Tile('dirt_turn', [3,4])
 STurn2 = Tile('short_turn', [2,3])
 STurn1 = Tile('short_turn', [1,2])
+KTurn4 = Tile('k_turn', [4,5,5])
 KTurn3 = Tile('k_turn', [3,4,4])
 KTurn2 = Tile('k_turn', [2,3,3])
 KTurn1 = Tile('k_turn', [1,2,2])
@@ -310,12 +311,13 @@ class State:
         self.successors = []
         self.finish = False
         self.passed = False
+        self.nb_dices_played = 0
         self.nb_seconds_win = 0
     
     def h_state(self):
         #paramètres différentiateurs
         return str([self.time, self.tile_position, self.pos_on_tile, self.dices,  
-                self.gaz, self.actual_speed])
+                self.gaz, self.actual_speed, self.nb_seconds_win ])
             
     
     def auth_dices(self):
@@ -358,12 +360,10 @@ class State:
         # bump ?
         if self.road.tiles[self.tile_position].type == 'bump' and self.actual_speed == self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
             tile += 1
-        
+       
         ns = State(self.road)
-        if self.last_dice != -1:
-            ns.nb_seconds_win = self.nb_seconds_win + 1
-        else:
-            ns.nb_seconds_win = self.nb_seconds_win
+        ns.nb_seconds_win = self.nb_seconds_win
+        ns.nb_dices_played = self.nb_dices_played + 1
         ns.tile_position = self.tile_position + tile
         ns.time = self.time
         ns.move = self.move + 1
@@ -392,8 +392,11 @@ class State:
 #          ns.dices = [1,2,3,4,5]
 #        ns.gaz = 1
         ns.last_dice = -1
-        ns.nb_seconds_win = self.nb_seconds_win
         ns.father = self
+        if self.nb_dices_played > 1:
+            ns.nb_seconds_win = self.nb_seconds_win + self.nb_dices_played
+        else:
+            ns.nb_seconds_win = self.nb_seconds_win 
         ns.actual_speed = self.actual_speed
         if self.actual_speed == 1:
             ns.time = self.time + 50
@@ -480,9 +483,52 @@ class Player:
 
 p("Test")
 fr = Road()
-
+game_no = 152302
 #fr.append(Straight)
-game_no = 1524
+if game_no == 55002:
+#    fr.append(Turn4)
+#    fr.add_s(2)
+#    fr.append(KTurn3)
+#    fr.add_s(3)    
+#    fr.append(Turn1)    
+#    fr.append(Turn1)    
+#    fr.add_s(3)
+#    fr.append(Turn4)
+#    fr.add_s(5)
+#    fr.append(Turn1)
+#    fr.add_s(3)
+#    fr.append(Turn1)
+#    fr.add_s(7)    
+#    fr.append(Turn1)    
+    fr.add_s(5)
+    fr.append(Bump4)
+    fr.add_s(3)
+    fr.append(STurn1)
+    fr.append(STurn1)
+    fr.add_s(4)
+    fr.append(STurn2)
+    fr.append(STurn2)
+    fr.add_s(2)
+    fr.append(STurn2)
+    fr.append(STurn2)
+    fr.add_s(2)
+    fr.append(Turn1)
+    fr.add_s(1)
+    fr.append(Turn1)
+    fr.add_s(2)  
+    fr.append(STurn1)
+    fr.append(STurn1)
+    fr.add_s(4)
+    fr.append(STurn2)
+    fr.append(STurn2)
+    fr.add_s(4)
+    fr.append(STurn2)
+    fr.append(STurn2)
+    fr.add_s(2)  
+    fr.append(Bump4)     
+    fr.add_s(3)  
+
+
 if game_no == -1:
     fr.add_s(4)    
     fr.append(STurn3)  
@@ -537,6 +583,45 @@ if game_no == 1536:
     fr.add_s(2)
     fr.append(Turn4)
     fr.add_s(1)
+if game_no == 152302 :
+    fr.add_s(2)
+    fr.append(Turn1)
+    fr.add_s(3)
+    fr.append(KTurn4)
+    fr.add_s(2)
+    fr.append(Turn4)
+    fr.add_s(1)
+    fr.append(Turn3)
+    fr.add_s(4)
+    fr.append(Bump3)
+    fr.add_s(3)
+    fr.append(STurn4)
+    fr.add_s(1)
+    fr.append(Turn4)
+    fr.add_s(2)
+    fr.append(Turn3)
+    fr.add_s(1)  
+    fr.append(Turn2)
+    fr.add_s(2)
+    fr.append(KTurn2)
+    fr.add_s(3)
+    fr.append(Turn4)
+    fr.add_s(4)
+    fr.append(Turn2)
+    fr.add_s(1)  
+    fr.append(Turn4)
+    fr.add_s(2)
+    fr.append(DKTurn1)
+    fr.add_s(2)
+    fr.append(Turn4)
+    fr.add_s(2) 
+    fr.append(KTurn2)
+    fr.add_s(3)
+    fr.append(SKATurn3)
+    fr.add_s(2)
+    fr.append(KTurn3)
+    fr.add_s(3)
+    
 if game_no == 1525 or game_no == 1537:
     #210 s dans ce cas
     fr.append(Turn4)
@@ -569,7 +654,7 @@ if game_no == 1525 or game_no == 1537:
     fr.append(STurn4)
     fr.add_s(3)     
 
-if game_no == 1523:
+if game_no == 152301:
     fr.append(Straight)
     fr.append(Straight)
     fr.append(Straight)
@@ -606,6 +691,8 @@ if game_no == 1523:
     fr.append(Turn2)
     fr.append(Straight)
     fr.append(Straight)
+
+    
 if game_no == 515:
     fr.append(Straight)
     fr.append(Turn2)
@@ -644,40 +731,40 @@ if game_no == 515:
     fr.append(Straight)
     fr.append(Straight)
 if game_no == 1522:
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Bump4)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(KTurn2)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Turn2)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Turn1)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(KTurn1)
-#    fr.append(Straight)
-#    fr.append(KTurn1)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Turn2)
-#    fr.append(Straight)
-#    fr.append(Straight)
-#    fr.append(Straight)   
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Bump4)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(KTurn1)
+    fr.append(Straight)
+    fr.append(KTurn1)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Turn2)
+    fr.append(Straight)
+    fr.append(Straight)
+    fr.append(Straight)   
     fr.append(KTurn2)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(SKATurn3)
     fr.append(Straight)
-    fr.append(Straight)
+    fr.append(Straight) #Tile 6-7 : 20s
     fr.append(KTurn3)
     fr.append(Straight)
     fr.append(Straight)
@@ -812,29 +899,30 @@ elif game_no == 551:
 #    fr.append(STurn2)
 #    fr.append(STurn2)
 #    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(LTurn1)
-    fr.append(Straight)
-    fr.append(Turn1)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(STurn1)
-    fr.append(STurn1)    
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(LTurn1)
+#    fr.append(Straight)
+#    fr.append(Turn1)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(STurn1)
+#    fr.append(STurn1)    
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(STurn2)
+#    fr.append(STurn2)    
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
     fr.append(Straight)
     fr.append(STurn2)
     fr.append(STurn2)    
     fr.append(Straight)
     fr.append(Straight)
+    fr.append(Bump4) 
     fr.append(Straight)
-    fr.append(Straight)
-    fr.append(STurn2)
-    fr.append(STurn2)    
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Bump4) # simulation bump
     fr.append(Straight)
     fr.append(Straight)
 elif game_no == 1489:
@@ -881,6 +969,8 @@ elif game_no == 1489:
     fr.append(Straight)
     fr.append(Turn1)
     fr.append(Straight)    
+    
+    
     fr.append(Turn1)
     fr.append(Straight)
     fr.append(Straight) # simulation bump
@@ -983,7 +1073,7 @@ def find_min(root, interesting_time = -1):
         if root.finish == True:
             if (root.time == interesting_time):
                 interesting.append(root)
-            histo[int(root.time/10)] += 1
+            #histo[int(root.time/10)] += 1
             return root.time, root
         else:
             return 1000000, None
