@@ -48,6 +48,24 @@ class Tile:
             elif pos_on_tile == 3:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
+        elif self.type == 'dirt_turn': #avec stright après
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [5,2]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [5,3]
+            elif pos_on_tile == 3:
+                # 3ème partie du virage dérapé: on sort après
+                return [-1]
+            elif pos_on_tile == 5:
+                return [-1]
         elif self.type == 'k_turn':
             # -1: on arrive de l'extérieur
             if pos_on_tile == -1:
@@ -218,6 +236,7 @@ Bump4 = Tile('bump', [4])
 Bump3 = Tile('bump', [3])
 STurn4 = Tile('short_turn', [4,5])
 STurn3 = Tile('short_turn', [3,4])
+DirtTurn3 = Tile('dirt_turn', [3,4])
 STurn2 = Tile('short_turn', [2,3])
 STurn1 = Tile('short_turn', [1,2])
 KTurn3 = Tile('k_turn', [3,4,4])
@@ -463,20 +482,36 @@ p("Test")
 fr = Road()
 
 #fr.append(Straight)
-game_no = 1536
+game_no = 1524
+if game_no == -1:
+    fr.add_s(4)    
+    fr.append(STurn3)  
+    fr.add_s(2)    
+if game_no == 1524:
+    fr.append(Turn4)
+    fr.add_s(2)
+    fr.append(DKTurn1)
+    fr.add_s(2)    
+    fr.append(Turn4)    
+    fr.add_s(1)
+    fr.append(Turn3)
+    fr.add_s(6)
+    fr.append(STurn4)
+
+    
 if game_no == 1536:
     #270 s dans ce cas
     # 270s avec l'erreur
-    # 270s avec une erreur de gaz qui manque dès le 1er coup
+    # 280s avec une erreur de gaz qui manque dès le 1er coup
 #    fr.add_s(2)
 #    fr.append(KTurn2)
 #    fr.add_s(3)
-    fr.add_s(1)
-    fr.append(SKATurn3)
-    fr.add_s(2)
-    fr.append(KTurn3)
-    fr.add_s(3)
-    fr.append(Tile('k_turn', [2,3,4]))
+#    fr.add_s(1)
+#    fr.append(SKATurn3)
+#    fr.add_s(2)
+#    fr.append(KTurn3)
+#    fr.add_s(3)
+#    fr.append(Tile('k_turn', [2,3,4]))
     fr.add_s(3)
     fr.append(KTurn2)
     fr.add_s(2)    
@@ -592,7 +627,7 @@ if game_no == 515:
     fr.append(Straight)
     fr.append(Straight)
     fr.append(Straight)
-    fr.append(KTurn3)
+    fr.append(SKATurn3)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(KTurn3)  
@@ -609,42 +644,38 @@ if game_no == 515:
     fr.append(Straight)
     fr.append(Straight)
 if game_no == 1522:
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Bump4)
-    fr.append(Straight)
-    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Bump4)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(KTurn2)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Turn2)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Turn1)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(KTurn1)
+#    fr.append(Straight)
+#    fr.append(KTurn1)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Turn2)
+#    fr.append(Straight)
+#    fr.append(Straight)
+#    fr.append(Straight)   
     fr.append(KTurn2)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Turn2)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Turn1)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(KTurn1)
-    fr.append(Straight)
-    fr.append(KTurn1)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Turn2)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)   
-    fr.append(Turn2)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(KTurn2)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(Straight)
-    fr.append(KTurn3)
+    fr.append(SKATurn3)
     fr.append(Straight)
     fr.append(Straight)
     fr.append(KTurn3)
@@ -860,7 +891,7 @@ elif game_no == 1489:
 
 fr.inspect()
 start = State(fr)
-start.actual_speed = 5
+start.actual_speed = 0
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -1026,12 +1057,18 @@ def parcours_tile(node, road):
                     min_tile[pos] = cur.time   
                 if cur.passed == False:
                     if cur.h_state() not in hash_state:
-                        hash_state[cur.h_state()] =  True
+                        hash_state[cur.h_state()] =  cur
                         cur.find_successors()
                         cur.passed = True
                         for lower in cur.successors:
                             fifo.append(lower)  
                     else:
+#                        p('########already hashed###########')
+#                        cur.inspect()
+#                        p id(cur)
+#                        hash_state[cur.h_state()].inspect()
+#                        p id( hash_state[cur.h_state()])
+#                        input()
                         cur.successors = []
                         cur.passed = True
                 else:
