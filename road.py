@@ -236,6 +236,15 @@ class Road:
     def append(self, tile)   :
         self.tiles.append(tile)
     
+    def append_road(self, road):
+        for t in road.tiles:
+            self.append(t)
+        return self
+    
+    def invert(self):
+        self.tiles = list(reversed(self.tiles))
+        return self.tiles
+    
     def add_s(self, num):
         for i in range(num):
             self.tiles.append(Straight)
@@ -381,6 +390,7 @@ class Road:
             
         if game_no == 1525 or game_no == 1537:
             #210 s dans ce cas
+        # J8-J7/C1-C2/J6-J5/L8-L9/V4-V1/X
             self.append(Turn4)
             self.append(Straight)
             self.append(DKTurn1)    
@@ -735,117 +745,138 @@ class Road:
             self.append(Straight)
             self.append(Straight)
     
-    def add_branch(self, b):
+    def add_branch(self, b, invert = False):
+        new_road = Road()
         if b == "J8-J7":
-            self.append(Turn4)
-            self.add_s(1)
-            self.append(DKTurn1)
-            self.add_s(1)    
-            self.append(Turn4) 
+            new_road.append(Turn4)
+            new_road.add_s(1)
+            new_road.append(DKTurn1)
+            new_road.add_s(1)    
+            new_road.append(Turn4) 
         elif b == "C9-C0":
-            self.add_s(1)
-            self.append(Turn3)
-            self.add_s(2)
+            new_road.add_s(1)
+            new_road.append(Turn3)
+            new_road.add_s(2)
         elif b == "V4-V1":
-            self.add_s(4)
-            self.append(STurn4)
-            self.add_s(2)
+            new_road.add_s(4)
+            new_road.append(STurn4)
+            new_road.add_s(2)
         elif b == "L6-L5":
-            self.add_s(2)
-            self.append(Turn1)
-            self.add_s(3)
-            self.append(KTurn4)
-            self.add_s(2)
-            self.append(Turn4)
+            new_road.add_s(2)
+            new_road.append(Turn1)
+            new_road.add_s(3)
+            new_road.append(KTurn4)
+            new_road.add_s(2)
+            new_road.append(Turn4)
         elif b == "V2-V3":
-            self.add_s(3)
-            self.append(Turn1)
-            self.add_s(3)
+            new_road.add_s(3)
+            new_road.append(Turn1)
+            new_road.add_s(3)
         elif b == "C1-C2":
-            self.append(Turn4)
-            self.add_s(2)
-            self.append(Turn3)
-            self.add_s(1)
-            self.append(Turn2)  
-            self.add_s(2)
-            self.append(KTurn2)
-            self.add_s(3)
-            self.append(Turn4)
-            self.add_s(4)
-            self.append(Turn2)                  
-            self.add_s(1)
+            new_road.append(Turn4)
+            new_road.add_s(2)
+            new_road.append(Turn3)
+            new_road.add_s(1)
+            new_road.append(Turn2)  
+            new_road.add_s(2)
+            new_road.append(KTurn2)
+            new_road.add_s(3)
+            new_road.append(Turn4)
+            new_road.add_s(4)
+            new_road.append(Turn2)                  
+            new_road.add_s(1)
         elif b == "L4-L7":
-            self.add_s(2)
-            self.append(KTurn4)
-            self.add_s(2)
-            self.append(KTurn3)  
-            self.add_s(2)
-            self.append(Bump4)
-            self.add_s(5)
+            new_road.add_s(2)
+            new_road.append(KTurn4)
+            new_road.add_s(2)
+            new_road.append(KTurn3)  
+            new_road.add_s(2)
+            new_road.append(Bump4)
+            new_road.add_s(5)
         elif b == "V0-V5":
-            self.add_s(1)
-            self.append(KTurn4)
-            self.add_s(3)
-            self.append(Bump3)  
-            self.add_s(4)
-            self.append(Turn3)
-            self.add_s(1)
+            new_road.add_s(1)
+            new_road.append(KTurn4)
+            new_road.add_s(3)
+            new_road.append(Bump3)  
+            new_road.add_s(4)
+            new_road.append(Turn3)
+            new_road.add_s(1)
         elif b == "J6-J5":
-            self.add_s(1)
-            self.append(KTurn3)
-            self.add_s(3)
-            self.append(KTurn2)  
-            self.add_s(1)
+            new_road.add_s(1)
+            new_road.append(KTurn3)
+            new_road.add_s(3)
+            new_road.append(KTurn2)  
+            new_road.add_s(1)
         elif b == "V6-V9":
-            self.add_s(2)
-            self.append(KTurn3)
-            self.add_s(1)
-            self.append(SKBTurn3)  
-            self.add_s(3)
-            self.append(KTurn2)
-            self.add_s(2)            
+            new_road.add_s(2)
+            new_road.append(KTurn3)
+            new_road.add_s(1)
+            new_road.append(SKBTurn3)  
+            new_road.add_s(3)
+            new_road.append(KTurn2)
+            new_road.add_s(2)            
         elif b == "C3-C8":
-            self.add_s(1)
-            self.append(Turn2)
-            self.add_s(2)
-            self.append(KTurn1)
-            self.add_s(1)
-            self.append(KTurn1)  
-            self.add_s(2)
-            self.append(Turn1)
-            self.add_s(4)
-            self.append(Turn2)
-            self.add_s(4)
-            self.append(KTurn2)                  
-            self.add_s(2)
-            self.append(Bump4)
-            self.add_s(2)
+            new_road.add_s(1)
+            new_road.append(Turn2)
+            new_road.add_s(2)
+            new_road.append(KTurn1)
+            new_road.add_s(1)
+            new_road.append(KTurn1)  
+            new_road.add_s(2)
+            new_road.append(Turn1)
+            new_road.add_s(4)
+            new_road.append(Turn2)
+            new_road.add_s(4)
+            new_road.append(KTurn2)                  
+            new_road.add_s(2)
+            new_road.append(Bump4)
+            new_road.add_s(2)
         elif b == "V3-V2":
-            self.add_s(3)
-            self.append(KTurn1)
-            self.add_s(3)        
+            new_road.add_s(3)
+            new_road.append(KTurn1)
+            new_road.add_s(3)        
         elif b == "J0-J9":
-            self.add_s(4)
-            self.append(Turn1)
-            self.add_s(2)      
-            self.append(KTurn2)
-            self.add_s(1) 
+            new_road.add_s(4)
+            new_road.append(Turn1)
+            new_road.add_s(2)      
+            new_road.append(KTurn2)
+            new_road.add_s(1) 
         elif b =="C9-C0":
-            self.add_s(1)             
-            self.append(Turn3)
-            self.add_s(2)             
+            new_road.add_s(1)             
+            new_road.append(Turn3)
+            new_road.add_s(2)  
+        elif b == "L8-L9":
+            new_road.add_s(1)  
+            new_road.append(Turn2)
+            new_road.add_s(2)  
+            new_road.append(Turn1)
+            new_road.add_s(3)
+            new_road.append(Turn1)
+            new_road.add_s(5)
         elif b == "X":
-            self.add_s(1)     
+            new_road.add_s(1)     
             #V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X 
         else:
-            print("Error, unknown branch:" + b)
+            return False
+        if invert:
+            new_road.invert()
+        self.append_road(new_road)
+        return True
         
         
     def from_road_book(self, s):
         #parse s
         branch_l = s.split("/")
         for branch in branch_l:
-            self.add_branch(branch)
+            if self.add_branch(branch) == False:
+                b_l = branch.split('-')
+                b_i = b_l[1] + '-' + b_l[0]
+
+                if self.add_branch(b_i, True) == False:
+                     print("Error, unknown branch:" + b_i)
+                          
+                                       
+                
     
     def what_next(self, tile, pos_on_tile):
         if tile >= len(self.tiles): # this is the last tile
@@ -871,21 +902,27 @@ class Road:
             return ret
     
     def inspect(self):
-        print ('Road length:' + str(len(self.tiles)))
+        ret = 'Road length:' + str(len(self.tiles)) + "\n"
         for tile in self.tiles:
-            tile.inspect()
-
+            ret += tile.inspect() + "\n"
+        return ret
+        
 fr = Road()
 
-
+#1522:  C8-C3/V9-V6/J1-J4/X
 #J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X
 #1523_03 :C3-C8/V3-V2/J0-J9/C9-C0/X
+#1537_01:  J8-J7/C1-C2/J6-J5/L8-L9/V4-V1/X
+#551_03: J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X/
 p("Test")
 fr = Road()
 game_no = 152302
-fr.from_game(1537)
+#fr.from_game(1537)
+#fr.from_road_book("J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X")
+fr.from_road_book("V4-V1/V0-V5")
+
 #fr.from_road_book("J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X")
 
-fr.inspect()
+print(fr.inspect())
 
          
