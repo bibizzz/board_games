@@ -31,6 +31,8 @@ class MRC:
 class State:
     def __init__(self,road, mrc = MRC()):
         self.double_low = False
+        
+        self.shakedown = True
         self.last_dice = -1
         self.road = road
         self.mrc = mrc
@@ -94,8 +96,12 @@ class State:
             return None
              
         # bump ?
-        if self.road.tiles[self.tile_position].type == 'bump' and self.actual_speed == self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
-            tile += 1
+        if self.road.tiles[self.tile_position].type == 'bump':
+            if self.actual_speed ==  self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile) - 1:
+                tile += 1
+            if self.shakedown and self.actual_speed == \
+                self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile):
+                tile += 2
        
         ns = State(self.road)
         ns.nb_seconds_win = self.nb_seconds_win
@@ -181,7 +187,8 @@ class State:
     
     def inspect_simple(self):
         ret ="Move " + str(self.move) + ':' + str(self.time) + 's. -' + str(self.nb_seconds_win) + ' ' + str(self.last_dice)
-        ret += ' '  + str(self.pos_on_tile) +  ' ' + self.road.tiles[self.tile_position].inspect()
+        ret += ' '  + str(self.pos_on_tile) +  ' ' + str(self.tile_position) + ' '\
+            + self.road.tiles[self.tile_position].inspect()
         return ret
          
     def inspect(self):
@@ -445,7 +452,7 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
-min, min_l = find_min(start, min+5)
+min, min_l = find_min(start, min+7)
 p(min_l)
 p(min)
 f = min_l

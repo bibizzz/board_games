@@ -195,7 +195,7 @@ class Tile:
             else:  #dérapage
                 return self.max_gears[1]
         elif self.type == 'bump':
-            return self.max_gears[0]
+            return self.max_gears[0]+1
         else:
             p("Troubles w/h max_gear")
             return -50
@@ -324,9 +324,9 @@ class Road:
         #    self.append(KTurn3)
         #    self.add_s(3)
         #    self.append(Tile('k_turn', [2,3,4]))
-            self.add_s(3)
-            self.append(KTurn2)
-            self.add_s(2)    
+#            self.add_s(3)
+#            self.append(KTurn2)
+#            self.add_s(2)    
             self.append(STurn3)    
             self.append(STurn3)
             self.add_s(2)
@@ -565,10 +565,10 @@ class Road:
             self.append(Straight)
         
         if game_no == 539:
-            self.append(Turn1)
-            self.append(Straight)
-            self.append(Straight)
-            self.append(Straight)
+#            self.append(Turn1)
+#            self.append(Straight)
+#            self.append(Straight)
+#            self.append(Straight)
             self.append(Straight)
             self.append(Turn2)
             self.append(Straight)
@@ -799,7 +799,7 @@ class Road:
             new_road.add_s(3)
             new_road.append(Bump3)  
             new_road.add_s(4)
-            new_road.append(Turn3)
+            new_road.append(KTurn3)
             new_road.add_s(1)
         elif b == "J6-J5":
             new_road.add_s(1)
@@ -831,6 +831,47 @@ class Road:
             new_road.add_s(2)
             new_road.append(Bump4)
             new_road.add_s(2)
+        elif b == "J19-J10":
+            new_road.add_s(1)
+            new_road.append(Turn1)
+            new_road.add_s(2)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(4)
+        elif b == "C5-C4":
+            new_road.add_s(1)
+            new_road.append(Turn3)
+            new_road.add_s(1)
+            new_road.append(Turn1)
+            new_road.add_s(5)
+        elif b == "L16-L15":
+            new_road.add_s(2)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(3)
+            new_road.append(Turn3)
+            new_road.add_s(2)     
+            new_road.append(Turn3)           
+        elif b == "J11-J14":
+            new_road.append(Turn4)
+            new_road.add_s(2)
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(3)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(3)
+            new_road.append(STurn4)
+            new_road.append(STurn4)
+            new_road.add_s(5)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(3)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(4)
         elif b == "V3-V2":
             new_road.add_s(3)
             new_road.append(KTurn1)
@@ -871,12 +912,9 @@ class Road:
             if self.add_branch(branch) == False:
                 b_l = branch.split('-')
                 b_i = b_l[1] + '-' + b_l[0]
-
                 if self.add_branch(b_i, True) == False:
-                     print("Error, unknown branch:" + b_i)
-                          
-                                       
-                
+                     print("Error, unknown branch:" + branch)
+                    
     
     def what_next(self, tile, pos_on_tile):
         if tile >= len(self.tiles): # this is the last tile
@@ -914,12 +952,13 @@ fr = Road()
 #1523_03 :C3-C8/V3-V2/J0-J9/C9-C0/X
 #1537_01:  J8-J7/C1-C2/J6-J5/L8-L9/V4-V1/X
 #551_03: J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X/
+#1525_02: V0-V5/C3-C8/L4-L7/X
 p("Test")
 fr = Road()
-game_no = 152302
-#fr.from_game(1537)
-#fr.from_road_book("J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X")
-fr.from_road_book("V4-V1/V0-V5")
+game_no = 539
+#fr.from_game(1536)
+#fr.from_road_book("V5-V0/J6-J5/V1-V4/C4-C5/L7-L4/X")
+fr.from_road_book("V0-V5/X")
 
 #fr.from_road_book("J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X")
 
