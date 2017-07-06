@@ -62,6 +62,22 @@ class Tile:
             elif pos_on_tile == 9:
              #corde
                 return [-1]
+        elif self.type == 'short_k_turn':
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1,9]
+            elif pos_on_tile == 0:
+                # 0 corde la prochaine case sort
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du virage dérapé
+                return [0,2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du virage dérapé
+                return [-1]
+            elif pos_on_tile == 9:
+             #corde
+                return [-1]
         elif self.type == 'sk_turn_after': #avec stright après
             # -1: on arrive de l'extérieur
             if pos_on_tile == -1:
@@ -222,6 +238,9 @@ KTurn2 = Tile('k_turn', [2,3,3])
 KTurn1 = Tile('k_turn', [1,2,2])
 SKBTurn3 = Tile('sk_turn_bfr', [3,4,4])
 SKATurn3 = Tile('sk_turn_after', [3,4,4])
+ShortKTurn4 = Tile('short_k_turn', [4,5,5])
+ShortKTurn3 = Tile('short_k_turn', [3,4,4])
+ShortKTurn2 = Tile('short_k_turn', [2,3,3])
 DKTurn1 = Tile('dk_turn', [1,2,2])
 Turn4 = Tile('turn', [4,5])
 Turn3 = Tile('turn', [3,4])
@@ -252,21 +271,24 @@ class Road:
     def from_game(self, game_no):
     #self.append(Straight)
         if game_no == 55002:
+            #
 #            self.append(Turn4)
 #            self.add_s(2)
 #            self.append(KTurn3)
 #            self.add_s(3)    
-            self.append(Turn1)    
-            self.append(Turn1)    
-            self.add_s(3)
-            self.append(Turn4)
-            self.add_s(5)
-            self.append(Turn1)
-            self.add_s(3)
-            self.append(Turn1)
-            self.add_s(7)    
-            self.append(Turn1)    
-            self.add_s(5)
+#            self.append(Turn1)    
+#            self.append(Turn1)    
+#            self.add_s(3)
+#            self.append(Turn4)
+#            self.add_s(5)
+#            self.append(Turn1)
+#            self.add_s(3)
+#            self.append(Turn1)
+#            self.add_s(4)    
+            self.add_s(3)  
+            self.append(KTurn1)    
+            self.add_s(3)    
+            self.add_s(2)
             self.append(Bump4)
             self.add_s(3)
             self.append(STurn1)
@@ -753,6 +775,20 @@ class Road:
             new_road.append(DKTurn1)
             new_road.add_s(1)    
             new_road.append(Turn4) 
+        elif b == "J1-J4":            
+            new_road.append(Turn4)
+            new_road.add_s(2)
+            new_road.append(KTurn3)
+            new_road.add_s(3)    
+            new_road.append(Turn1)    
+            new_road.append(Turn1)    
+            new_road.add_s(3)
+            new_road.append(Turn4)
+            new_road.add_s(5)
+            new_road.append(Turn1)
+            new_road.add_s(3)
+            new_road.append(Turn1)
+            new_road.add_s(4) 
         elif b == "C9-C0":
             new_road.add_s(1)
             new_road.append(Turn3)
@@ -789,13 +825,13 @@ class Road:
             new_road.add_s(2)
             new_road.append(KTurn4)
             new_road.add_s(2)
-            new_road.append(KTurn3)  
+            new_road.append(ShortKTurn3)  
             new_road.add_s(2)
             new_road.append(Bump4)
             new_road.add_s(5)
         elif b == "V0-V5":
             new_road.add_s(1)
-            new_road.append(KTurn4)
+            new_road.append(ShortKTurn4)
             new_road.add_s(3)
             new_road.append(Bump3)  
             new_road.add_s(4)
@@ -955,10 +991,10 @@ fr = Road()
 #1525_02: V0-V5/C3-C8/L4-L7/X
 p("Test")
 fr = Road()
-game_no = 539
-#fr.from_game(1536)
+game_no = 55002
+#fr.from_game(55002)
 #fr.from_road_book("V5-V0/J6-J5/V1-V4/C4-C5/L7-L4/X")
-fr.from_road_book("V0-V5/X")
+fr.from_road_book("J4-J1/V5-V0/L4-L7/C5-C4/X")
 
 #fr.from_road_book("J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X")
 
