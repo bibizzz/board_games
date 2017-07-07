@@ -96,7 +96,7 @@ class State:
             return None
              
         # bump ?
-        if self.road.tiles[self.tile_position].type == 'bump':
+        if self.road.tiles[self.tile_position+tile].type == 'bump':
             if self.actual_speed ==  self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile) - 1:
                 tile += 1
             if self.shakedown and self.actual_speed == \
@@ -121,6 +121,13 @@ class State:
             ns.last_dice = dice    
             ns.dices.remove(dice)
             ns.actual_speed = dice
+                # bump ?
+        if ns.road.tiles[ns.tile_position].type == 'bump':
+            if ns.actual_speed ==  ns.road.tiles[ns.tile_position].get_max_gear(ns.pos_on_tile) - 1:
+                ns.tile_position += 1
+            if ns.shakedown and ns.actual_speed == \
+                ns.road.tiles[ns.tile_position].get_max_gear(ns.pos_on_tile):
+                ns.tile_position += 2
         return ns
     
     def must_stop(self):
@@ -230,7 +237,7 @@ class Player:
     
  
 start = State(road.fr)
-start.actual_speed = 0
+start.actual_speed = 5
 p("start")
 start.inspect()
 #suc = start.find_successors()
