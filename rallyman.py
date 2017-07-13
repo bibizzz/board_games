@@ -237,7 +237,7 @@ class Player:
     
  
 start = State(road.fr)
-start.actual_speed = 5
+start.actual_speed = 0
 p("start")
 start.inspect()
 #suc = start.find_successors()
