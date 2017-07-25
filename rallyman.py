@@ -55,7 +55,7 @@ class State:
     def h_state(self):
         #paramètres différentiateurs
         return str([self.time, self.tile_position, self.pos_on_tile, self.dices,  
-                self.gaz, self.actual_speed, self.nb_seconds_win ])
+                self.gaz, self.actual_speed,self.nb_seconds_win ])
             
     
     def auth_dices(self):
@@ -237,7 +237,7 @@ class Player:
     
  
 start = State(road.fr)
-start.actual_speed = 0
+start.actual_speed =0
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -272,13 +272,13 @@ def parcours_brace(root):
     ret = ret + ')'
     return ret
 
-def parcours_dot(root):
+def parcours_dot(root, tile_max = 100000):
     nodes = ""
     if root.last_dice != -1:
         ret = str(root.last_dice) + str(root.tile_position) +str(root.pos_on_tile)
     else:
         ret =  str(root.time)
-    if root.move > 20:
+    if root.tile_position >= tile_max:
         return ""  
     nodes = nodes + 'u' + str(id(root)) + '[label=' + ret + '] \n'     
     nodes = nodes + 'u' + str(id(root)) + '-- {' 
@@ -287,7 +287,7 @@ def parcours_dot(root):
            nodes = nodes + 'u' + str(id(st)) + ';' 
         nodes = nodes + "}\n"  
         for st in root.successors:
-            nodes = nodes +parcours_dot(st)
+            nodes = nodes +parcours_dot(st, tile_max)
     return nodes
 
 def up_dot(leaf):
@@ -357,12 +357,12 @@ def reduce_fifo(fifo, max_time):
     min_ref = 100000
     fifo = list(fifo)
     for s in fifo:
-        if s.time < min_ref:
-            min_ref = s.time
-    p(min_ref)
+        if s.time - s.nb_seconds_win < min_ref:
+            min_ref = s.time - s.nb_seconds_win
+    p("Min: " + str(min_ref))
     min_supress = min_ref + max_time   
     for s in fifo:
-        if s.time <= min_supress:
+        if s.time - s.nb_seconds_win <= min_supress:
             ret.append(s)
     return ret
             
@@ -375,6 +375,15 @@ tile_time = [1000] * 100
 tile_number = [0] * 100 
 
 hash_state = {}
+
+def play(node, dice):
+    for s in node.successors:
+        if s.last_dice == dice:
+            return s
+    p('not a valid move')
+    return node
+
+
 
 def parcours_tile(node, road):
     nb_tiles = len(road.tiles)
@@ -397,7 +406,7 @@ def parcours_tile(node, road):
             count += 1
             if cur.tile_position > pos:
                 #p(int(cur.time/10))
-                #histo_tile[int(cur.time/10)] += 1
+              #  histo_tile[int(cur.time/10)] += 1
                 next_fifo.append(cur)
             else:
                 if min_tile[pos] > cur.time:
@@ -459,24 +468,24 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
-min, min_l = find_min(start, min+7)
+min, min_l = find_min(start, min+10)
 p(min_l)
 p(min)
-f = min_l
-while f != None:
-    f.inspect()
-    f = f.father
+#f = min_l
+#while f != None:
+#    f.inspect()
+#    f = f.father
     
 p(histo)
 
-for r in interesting:
-    p("NEW")
-    p(id(r))
-    r.trace_moves()
+#for r in interesting:
+#    p("NEW")
+#    p(id(r))
+#    r.trace_moves()
 p(str(len(interesting))+' interesting moves')
 
-for r in interesting:
-    r.inspect()
+#for r in interesting:
+#    r.inspect()
 
 #dot = parcours_dot(start)
 dot = parcours_dot_sons(interesting)

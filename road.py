@@ -974,6 +974,12 @@ class Road:
             new_road.add_s(1)             
             new_road.append(Turn3)
             new_road.add_s(2)  
+        elif b == "L0-L1":
+            new_road.add_s(1)  
+            new_road.append(Turn2)
+            new_road.add_s(3)  
+            new_road.append(KTurn3)
+            new_road.add_s(1)
         elif b == "L8-L9":
             new_road.add_s(1)  
             new_road.append(Turn2)
@@ -982,6 +988,11 @@ class Road:
             new_road.add_s(3)
             new_road.append(Turn1)
             new_road.add_s(5)
+        elif b == "V7-V8":
+            new_road.add_s(1)  
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(1)
         elif b == "X":
             new_road.add_s(1)     
             #V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X 
@@ -992,7 +1003,7 @@ class Road:
         self.append_road(new_road)
         return True
         
-        
+    
     def from_road_book(self, s):
         #parse s
         branch_l = s.split("/")
@@ -1042,17 +1053,41 @@ fr = Road()
 #551_03: J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X/
 #1525_02: V0-V5/C3-C8/L4-L7/X
 #1524_03: V1-V4/J6-J5/L5-L6/C2-C1/L7-L4/V5-V0/X
-#539_01_ending: J3-J2/L3-L2/V5-V0/X
+#539_01_ending: J3-J2/L3-L2//X
 p("Test")
 fr = Road()
 game_no = 55002
 #fr.from_game(1536)
 #fr.from_road_book("V5-V0/J6-J5/V1-V4/C4-C5/L7-L4/X")
 #fr.from_road_book("J4-J1/V5-V0/L4-L7/C5-C4/X")
-
-fr.from_road_book("C1-C2/A24-A33-A21/P16-P13/X")
-
-#fr.from_road_book("J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X")
+#fr.append(Bump4)
+#fr.add_s(4)    
+#fr.append(Turn1)       
+#fr.add_s(4)
+#fr.append(KTurn2)
+#fr.add_s(1)
+#ANALYSER 1537_02
+#fr.add_s(1)
+#fr.append(KTurn3)
+#fr.add_s(1)
+#fr.add_s(1)
+#fr.append(Turn2)
+#fr.add_s(2)
+#fr.append(KTurn1)
+#fr.add_s(1)
+#fr.append(KTurn1)  
+#fr.add_s(2)
+#fr.append(Turn1)
+#fr.add_s(4)
+#fr.append(Turn2)
+#fr.add_s(4)
+#fr.append(KTurn2)                  
+#fr.add_s(2)
+#fr.append(Bump4)
+#fr.add_s(2)
+#fr.from_road_book("C3-C8/X")#/L4-L7/X")
+#fr.from_road_book("J4-J1/L0-L1/J0-J9/X")
+fr.from_road_book("J4-J1/L8-L9/J0-J9/C12-C11/L0-L1/C10-C19/V3-V2/L2-L3/X")
 
 print(fr.inspect())
 
