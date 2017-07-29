@@ -237,7 +237,7 @@ class Player:
     
  
 start = State(road.fr)
-start.actual_speed =0
+start.actual_speed = 0
 p("start")
 start.inspect()
 #suc = start.find_successors()
@@ -367,12 +367,12 @@ def reduce_fifo(fifo, max_time):
     return ret
             
 
-min_tile = [10000] * 100
+min_tile = [10000] * 150
 
 histo_tile = [0] * 10
 
-tile_time = [1000] * 100
-tile_number = [0] * 100 
+tile_time = [1000] * 150
+tile_number = [0] * 150
 
 hash_state = {}
 
@@ -468,7 +468,7 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
-min, min_l = find_min(start, min+10)
+min, min_l = find_min(start, min+9)
 p(min_l)
 p(min)
 #f = min_l
