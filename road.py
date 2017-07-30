@@ -25,6 +25,19 @@ class Tile:
             elif pos_on_tile == 3:
                 # 3ème partie du virage dérapé: on sort après
                 return [-1]
+        elif self.type == 'dirt_straight': #avec stright après
+            # -1: on arrive de l'extérieur
+            if pos_on_tile == -1:
+                return [0,1]
+            elif pos_on_tile == 0:
+                # on sort direct
+                return [-1]
+            elif pos_on_tile == 1:
+                # 1 première partie du dérapé
+                return [2]
+            elif pos_on_tile == 2:
+                # 2 deuxième partie du dérapé
+                return [-1]
         elif self.type == 'dirt_turn': #avec stright après
             # -1: on arrive de l'extérieur
             if pos_on_tile == -1:
@@ -1039,6 +1052,7 @@ class Road:
                     
     
     def what_next(self, tile, pos_on_tile):
+        #return [add_to_tile, pos_on_tile]
         if tile >= len(self.tiles): # this is the last tile
             return [-10,-10]
         
@@ -1117,7 +1131,7 @@ game_no = 55002
 #fr.append(Bump4)
 #fr.append(KTurn3)
 #fr.add_s(1)
-fr.from_road_book("J3-J2/C3-C8/L0-L1/V9-V6/X")
+fr.from_road_book("B8-B9/L17-L14/C2-C1/X")
 
 print(fr.inspect())
 
