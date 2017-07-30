@@ -51,6 +51,7 @@ class State:
         self.passed = False
         self.nb_dices_played = 0
         self.nb_seconds_win = 0
+        self.info = None
     
     def h_state(self):
         #paramètres différentiateurs
@@ -90,11 +91,12 @@ class State:
             return None
 
         min_auth = self.road.tiles[self.tile_position+tile].get_min_gear(pot)
-        if dice < min_auth:
-            return None
-        if dice == 0 and self.actual_speed < min_auth:
-            return None
-             
+        if dice == 0:
+            if self.actual_speed < min_auth:
+                return None
+        elif dice != 0 and dice < min_auth:
+            return None            
+           
         # bump ?
         if self.road.tiles[self.tile_position+tile].type == 'bump':
             if self.actual_speed ==  self.road.tiles[self.tile_position].get_max_gear(self.pos_on_tile) - 1:
@@ -364,6 +366,8 @@ def reduce_fifo(fifo, max_time):
     for s in fifo:
         if s.time - s.nb_seconds_win <= min_supress:
             ret.append(s)
+        else:
+            s.info = "reduced" + str(min_supress)
     return ret
             
 
@@ -425,6 +429,7 @@ def parcours_tile(node, road):
 #                        hash_state[cur.h_state()].inspect()
 #                        p id( hash_state[cur.h_state()])
 #                        input()
+                        cur.info = "hash" + cur.h_state()
                         cur.successors = []
                         cur.passed = True
                 else:
