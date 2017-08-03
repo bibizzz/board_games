@@ -541,6 +541,25 @@ class Road:
             new_road.add_s(3)  
             new_road.append(KTurn3)
             new_road.add_s(1)
+        elif b == "V16-V19":
+            new_road.add_s(2) 
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(2)  
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(3)
+            new_road.append(STurn2)
+            new_road.append(STurn2)
+            new_road.add_s(2)
+        elif b == "C15-C14":
+            new_road.add_s(1) 
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(1)  
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(5)
         elif b == "L8-L9":
             new_road.add_s(1)  
             new_road.append(Turn2)
@@ -549,6 +568,17 @@ class Road:
             new_road.add_s(3)
             new_road.append(Turn1)
             new_road.add_s(5)
+        elif b == "J13-J12":
+            new_road.add_s(1)
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(1)
+        elif b == "C17-C16":
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(4) 
+            new_road.append(STurn2)
+            new_road.append(STurn2)
         elif b == "V7-V8":
             new_road.add_s(1)  
             new_road.append(STurn3)
@@ -651,12 +681,8 @@ game_no = 55002
 #fr.from_road_book("J4-J1/L0-L1/J0-J9/X")
 #fr.append(KTurn4)
 #fr.add_s(2)
-#fr.append(ShortKTurn3)  
-#fr.add_s(2)
-#fr.append(Bump4)
-#fr.append(KTurn3)
-#fr.add_s(1)
-fr.from_road_book("B8-B9/L17-L14/C2-C1/X")
+
+fr.from_road_book("J3-J2/C3-C8/L0-L1/V9-V6/X")
 
 print(fr.inspect())
 

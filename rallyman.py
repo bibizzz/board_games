@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+	# -*- coding: utf-8 -*-
 
 from collections import deque
 import road
@@ -239,6 +239,7 @@ class Player:
     
  
 start = State(road.fr)
+
 start.actual_speed = 0
 p("start")
 start.inspect()
@@ -387,8 +388,6 @@ def play(node, dice):
     p('not a valid move')
     return node
 
-
-
 def parcours_tile(node, road):
     nb_tiles = len(road.tiles)
     hash_state[node.h_state()] = True
@@ -403,7 +402,7 @@ def parcours_tile(node, road):
         next_fifo = deque()
         if  road.tiles[pos].type == 'straight' and pos >= 2:
             p("reduce!")
-            fifo = reduce_fifo(fifo, 110)
+            fifo = reduce_fifo(fifo, 70)
             p(len(fifo))
         while len(fifo) > 0:
             cur = fifo.popleft() 
@@ -473,7 +472,7 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
-min, min_l = find_min(start, min+9)
+min, min_l = find_min(start, min+3)
 p(min_l)
 p(min)
 #f = min_l
