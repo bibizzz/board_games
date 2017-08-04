@@ -14,7 +14,7 @@ Move 37:130s. -28 0 0 27 straight;[]
 Move 36:130s. -28 2 0 26 turn;[2, 3]
 Move 35:130s. -28 3 1 26 turn;[2, 3]
 Move 34:130s. -28 4 0 25 straight;[]
-Move 33:130s. -28 -1 0 24 straight;[]
+Move 33:130s. -28 -1 0 24 straight;[]### 2m59 + 41s
 Move 32:120s. -22 5 0 24 straight;[]
 Move 31:120s. -22 4 0 23 straight;[]
 Move 30:120s. -22 3 0 22 straight;[]

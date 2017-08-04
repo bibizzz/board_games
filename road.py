@@ -682,7 +682,7 @@ game_no = 55002
 #fr.append(KTurn4)
 #fr.add_s(2)
 
-fr.from_road_book("J3-J2/C3-C8/L0-L1/V9-V6/X")
+fr.from_road_book("V6-V9/C3-C8/J1-J4/L8-L9/J3-J2/X")
 
 print(fr.inspect())
 
