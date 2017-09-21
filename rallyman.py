@@ -472,7 +472,7 @@ p(min_tile)
 print("start min finding")
 print(nb_leaves(start))
 min, min_l = find_min(start)
-min, min_l = find_min(start, min+3)
+min, min_l = find_min(start, min)
 p(min_l)
 p(min)
 #f = min_l

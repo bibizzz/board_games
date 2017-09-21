@@ -96,8 +96,8 @@ class Tile:
             if pos_on_tile == -1:
                 return [0,1,9]
             elif pos_on_tile == 0:
-                # 0 corde la prochaine case sort
-                return [-1]
+                # 0 corde la prochaine case on va au straight d'après (5)
+                return [5]
             elif pos_on_tile == 1:
                 # 1 première partie du virage dérapé
                 return [0,2]
@@ -106,10 +106,13 @@ class Tile:
                 return [0,3]
             elif pos_on_tile == 3:
                 # 3ème partie du virage dérapé: on sort après
+                return [5]
+            elif pos_on_tile == 5:
+                # 3ème partie du virage dérapé: on sort après
                 return [-1]
             elif pos_on_tile == 9:
                  #corde spéciale
-                return [-2]
+                return [-1,5]
         elif self.type == 'sk_turn_bfr': #avec stright avant
             # -1: on arrive de l'extérieur
             if pos_on_tile == -1:
@@ -385,6 +388,24 @@ class Road:
             new_road.add_s(3)
             new_road.append(KTurn2)  
             new_road.add_s(1)
+        elif b == "V10-V15":
+            new_road.add_s(1)
+            new_road.append(STurn4)
+            new_road.append(STurn4)
+            new_road.add_s(3)
+            new_road.append(Bump3)  
+            new_road.add_s(4)
+            new_road.append(STurn3)
+            new_road.append(STurn3)
+            new_road.add_s(1)
+        elif b == "V9-V6":
+            new_road.add_s(2)
+            new_road.append(KTurn2)
+            new_road.add_s(3)
+            new_road.append(SKATurn3)  
+            new_road.add_s(1)
+            new_road.append(KTurn3)
+            new_road.add_s(2)  
         elif b == "V6-V9":
             new_road.add_s(2)
             new_road.append(KTurn3)
@@ -501,6 +522,26 @@ class Road:
             new_road.append(STurn4)
             new_road.append(STurn4)
             new_road.add_s(2)
+        elif b == "C18-C13":
+            new_road.add_s(2)
+            new_road.append(Bump4)
+            new_road.add_s(2)
+            new_road.append(STurn2)
+            new_road.append(STurn2)
+            new_road.add_s(4)
+            new_road.append(STurn2)
+            new_road.append(STurn2)
+            new_road.add_s(4)
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(2)
+            new_road.append(Turn1)
+            new_road.add_s(1)
+            new_road.append(LTurn1)
+            new_road.add_s(2)
+            new_road.append(STurn2)
+            new_road.append(STurn2)
+            new_road.add_s(1)
         elif b == "J11-J14":
             new_road.append(Turn4)
             new_road.add_s(2)
@@ -541,6 +582,16 @@ class Road:
             new_road.add_s(3)  
             new_road.append(KTurn3)
             new_road.add_s(1)
+        elif b == "V14-V11":
+            new_road.add_s(4) 
+            new_road.append(STurn4)
+            new_road.append(STurn4)
+            new_road.add_s(2)  
+        elif b == "V12-V13":
+            new_road.add_s(3) 
+            new_road.append(STurn1)
+            new_road.append(STurn1)
+            new_road.add_s(3)  
         elif b == "V16-V19":
             new_road.add_s(2) 
             new_road.append(STurn3)
@@ -611,24 +662,23 @@ class Road:
         if tile >= len(self.tiles): # this is the last tile
             return [-10,-10]
         
-        nxt = self.tiles[tile].next_pos_on_tile(pos_on_tile)
-        if nxt == [-1]: # next tile
-            pot_l = self.tiles[tile+1].next_pos_on_tile(-1)
-            ret = []
-            for pot in pot_l:
-                ret.append([1,pot])
-            return ret
-        elif nxt == [-2]: #jump over a tile
-            pot_l = self.tiles[tile+2].next_pos_on_tile(-1)
-            ret = []
-            for pot in pot_l:
-                ret.append([2,pot])#parse
-            return ret
-        else: #same tile
-            ret = []
-            for pot in nxt:
-                ret.append([0,pot])
-            return ret
+        ret = []
+        nxt_l = self.tiles[tile].next_pos_on_tile(pos_on_tile)
+        for nxt in nxt_l:
+            if nxt == -1: # next tile
+                pot_l = self.tiles[tile+1].next_pos_on_tile(-1)
+                for pot in pot_l:
+                    ret.append([1,pot])
+            elif nxt == -2: #jump over a tile
+                pot_l = self.tiles[tile+2].next_pos_on_tile(-1)
+                for pot in pot_l:
+                    ret.append([2,pot])#parse
+            else: #same tile
+                ret.append([0,nxt])
+        # print(nxt)
+        # print(ret)
+        # input("g")
+        return ret         
     
     def inspect(self):
         ret = 'Road length:' + str(len(self.tiles)) + "\n"
@@ -636,19 +686,9 @@ class Road:
             ret += tile.inspect() + "\n"
         return ret
         
-fr = Road()
 
-#1522:  C8-C3/V9-V6/J1-J4/X
-#J8-J7/C9-C0/V4-V1/L6-L5/V2-V3/C1-C2/L4-L7/V0-V5/J6-J5/V6-V9/X
-#1523_03 :C3-C8/V3-V2/J0-J9/C9-C0/X
-#1537_01:  J8-J7/C1-C2/J6-J5/L8-L9/V4-V1/X
-#551_03: J19-J10/C5-C4/V5-V0/L16-L15/V1-V4/J11-J14/X/
-#1525_02: V0-V5/C3-C8/L4-L7/X
-#1524_03: V1-V4/J6-J5/L5-L6/C2-C1/L7-L4/V5-V0/X
-#539_01_ending: J3-J2/L3-L2//X
 p("Test")
 fr = Road()
-game_no = 55002
 #fr.from_game(1536)
 #fr.from_road_book("V5-V0/J6-J5/V1-V4/C4-C5/L7-L4/X")
 #fr.from_road_book("J4-J1/V5-V0/L4-L7/C5-C4/X")
@@ -659,30 +699,31 @@ game_no = 55002
 #fr.append(KTurn2)
 #fr.add_s(1)
 #ANALYSER 1537_02
-#fr.add_s(1)
+#fr.add_s(3)
 #fr.append(KTurn3)
-#fr.add_s(1)
-#fr.add_s(1)
+#fr.append(STurn1)
+#fr.append(STurn1)
+#fr.add_s(3)
 #fr.append(Turn2)
-#fr.add_s(2)
 #fr.append(KTurn1)
-#fr.add_s(1)
-#fr.append(KTurn1)  
+#fr.add_s(2)
+#fr.append(KTurn2)  
 #fr.add_s(2)
 #fr.append(Turn1)
 #fr.add_s(4)
 #fr.append(Turn2)
 #fr.add_s(4)
-#fr.append(KTurn2)                  
-#fr.add_s(2)
+# fr.append(KTurn3)                  
+# fr.add_s(2)
 #fr.append(Bump4)
-#fr.add_s(2)
+# fr.add_s(2)
 #fr.from_road_book("C3-C8/X")#/L4-L7/X")
 #fr.from_road_book("J4-J1/L0-L1/J0-J9/X")
 #fr.append(KTurn4)
 #fr.add_s(2)
 
-fr.from_road_book("V6-V9/C3-C8/J1-J4/L8-L9/J3-J2/X")
+fr.from_road_book("C8-C3/V9-V6/J1-J4/X")
+#fr.from_road_book("V9-V6/J1-J4/X")
 
 print(fr.inspect())
 
